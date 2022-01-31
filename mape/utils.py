@@ -7,6 +7,8 @@ import threading
 from typing import Any
 from dataclasses import dataclass
 
+from .typing import CallMethod
+
 _datefmt = '%H:%M:%S'
 # _datefmt='%d %H:%M:%S'
 _fmt = '%(asctime)s.%(msecs)d %(threadShortName)-3s %(name)-20s: %(levelname)-8s %(message)s'

@@ -11,9 +11,9 @@
   * MANUAL: DIY
   * REGISTER: Follow loop registering order
   * TYPE: M -> A -> P -> E
-* MapeElement have to manage different kind of item/value:
-  * MSG: classic msg with: payload/value, from (?!), through (?!), to (?!), timestamp (?!), hops (?!), 
-  * METHOD: serialization object method call: method, params
+* ~~MapeElement have to manage different kind of item/value:~~
+  * ~~MSG: classic msg with: payload/value, from (?!), through (?!), to (?!), timestamp (?!), hops (?!),~~ 
+  * ~~METHOD: serialization object method call: method, params~~
 * MapeLoop @decorator accept coroutine
 * MapeLoop @decorator: @toclass, @instance, @register ?!
 * Set default scheduler for pipe, subscribe, start, etc...

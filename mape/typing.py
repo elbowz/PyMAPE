@@ -1,8 +1,46 @@
+from datetime import datetime
 from abc import ABC, abstractmethod
-from typing import Type, Any, List, Tuple, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple
+from dataclasses import dataclass, field
+from typing import Type, Any, List, Tuple, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple, TypeVar
 
+from rx.core.typing import Observer
+
+T1 = TypeVar('T1')
+T2 = TypeVar('T2')
 
 OpsChain = Union[Tuple, Callable]
+Mapper = Callable[[T1], T2]
+DestMapper = Callable[[T1], Observer]
+
+
+@dataclass
+class Item:
+    src: str = None
+    dst: str = None
+    hops: int = 0
+    timestamp: float = field(default_factory=lambda: datetime.timestamp(datetime.now()))
+
+
+@dataclass
+class Message(Item):
+    value: Any = None
+
+    def __repr__(self):
+        formatted_time = datetime.fromtimestamp(self.timestamp).strftime('%H:%M:%S.%f')[:-3]
+        return f"{self.__class__.__name__}({self.value}, {self.src}, {self.dst}, {self.hops}, {formatted_time})"
+
+
+@dataclass
+class CallMethod(Item):
+    name: str = None
+    args: list = None
+    kwargs: dict = None
+
+    def exec(self, obj_or_module):
+        return getattr(obj_or_module, self.name)(*self.args, **self.kwargs)
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.name}, {self.args}, {self.kwargs}, {self.src}, {self.dst}, {self.hops}, {self.timestamp})"
 
 
 class MapeLoop(ABC):

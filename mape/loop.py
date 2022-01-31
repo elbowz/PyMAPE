@@ -1,17 +1,18 @@
 import logging
 from functools import wraps, partial
 from typing import Type, Any, Tuple, List, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple
+import types
 
 import mape
 
-from .base_elements import Element, Monitor, Analyze, Plan, Execute, UID_DEF, UID_RANDOM
+from .base_elements import Element, Monitor, Analyze, Plan, Execute, UID
 from .utils import generate_uid
-from mape import typing
+from .typing import MapeLoop, OpsChain
 
 logger = logging.getLogger(__name__)
 
 
-class Loop(typing.MapeLoop):
+class Loop(MapeLoop):
     prefix: str = 'l_'
 
     def __init__(self, uid: str = None, app=None) -> None:
@@ -81,19 +82,19 @@ class Loop(typing.MapeLoop):
         return self._elements
 
     def monitor(self, func=None, /, *,
-                uid=None, ops_in: Optional[typing.OpsChain] = (), ops_out: Optional[typing.OpsChain] = (),
+                uid=None, ops_in: Optional[OpsChain] = (), ops_out: Optional[OpsChain] = (),
                 param_self=False
                 ) -> Element:
         return self._add_func_decorator(func, Monitor, uid=uid, ops_in=ops_in, ops_out=ops_out, param_self=param_self)
 
     def analyze(self, func=None, /, *,
-                uid=None, ops_in: Optional[typing.OpsChain] = (), ops_out: Optional[typing.OpsChain] = (),
+                uid=None, ops_in: Optional[OpsChain] = (), ops_out: Optional[OpsChain] = (),
                 param_self=False
                 ) -> Element:
         return self._add_func_decorator(func, Analyze, uid=uid, ops_in=ops_in, ops_out=ops_out, param_self=param_self)
 
     def plan(self, func=None, /, *,
-             uid=None, ops_in: Optional[typing.OpsChain] = (), ops_out: Optional[typing.OpsChain] = (), param_self=False
+             uid=None, ops_in: Optional[OpsChain] = (), ops_out: Optional[OpsChain] = (), param_self=False
              ) -> Element:
         return self._add_func_decorator(func, Plan, uid=uid, ops_in=ops_in, ops_out=ops_out, param_self=param_self)
 
@@ -101,8 +102,8 @@ class Loop(typing.MapeLoop):
                 func=None,
                 /, *,
                 uid=None,
-                ops_in: Optional[typing.OpsChain] = (),
-                ops_out: Optional[typing.OpsChain] = (),
+                ops_in: Optional[OpsChain] = (),
+                ops_out: Optional[OpsChain] = (),
                 param_self=False
                 ) -> Element:
         return self._add_func_decorator(func, Execute, uid=uid, ops_in=ops_in, ops_out=ops_out, param_self=param_self)
@@ -122,9 +123,9 @@ class Loop(typing.MapeLoop):
                   # TODO: create an alias
                   func,
                   element_class: Type[Union[Any]],
-                  uid=UID_DEF,
-                  ops_in: Optional[typing.OpsChain] = (),
-                  ops_out: Optional[typing.OpsChain] = (),
+                  uid=UID.DEF,
+                  ops_in: Optional[OpsChain] = (),
+                  ops_out: Optional[OpsChain] = (),
                   param_self=False) -> Element:
 
         # discover what parameters (name and default) has function signature
@@ -132,7 +133,7 @@ class Loop(typing.MapeLoop):
         # for param in inspect.signature(func).parameters.values():
         #     print("param_name", param.name, param.default)
 
-        if uid == UID_DEF:
+        if uid == UID.DEF:
             uid = func.__name__
         # UID_RANDOM or str is managed directly by Element()
 
@@ -152,6 +153,8 @@ class Loop(typing.MapeLoop):
         element: Element = element_class(loop=self, uid=uid, ops_in=ops_in, ops_out=ops_out)
 
         param_self and element.add_param_to_on_next_call({'self': element})
+        # Bound as a real "object method" passing self as first arg
+        # func = types.MethodType(func, element)
         setattr(element, '_on_next', func)
         # or: element._on_next = func
 

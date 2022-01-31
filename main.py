@@ -22,8 +22,8 @@ mape.setup_logger()
 logging.getLogger('mape').setLevel(logging.DEBUG)
 
 
-heater_a = mape.Loop(uid='heater-a')
-heater_b = mape.Loop(uid='heater-b')
+heater_a = mape.MapeLoop(uid='heater-a')
+heater_b = mape.MapeLoop(uid='heater-b')
 print("loops", mape.mape_loops)
 
 

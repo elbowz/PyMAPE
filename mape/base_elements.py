@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import functools
 import logging
-from typing import Type, Any, List, Tuple, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple
-from enum import Flag
+from typing import Type, Any, List, Tuple, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple, Final
+from enum import Flag, Enum
 
 import rx
 from rx.subject import Subject
@@ -12,13 +12,11 @@ from rx.disposable import Disposable, CompositeDisposable
 from rx import operators as ops
 from dataclasses import dataclass, field
 
-from mape import typing
+from .typing import Message, CallMethod, MapeLoop, OpsChain
 from .utils import init_logger, LogObserver, GenericObject, caller_module_name
 
 logger = logging.getLogger(__name__)
 
-UID_RANDOM = None
-UID_DEF = 1
 
 class BaseMapeElementTODELETE:
     """
@@ -105,6 +103,10 @@ class BaseMapeElementTODELETE:
         logger.debug('on_unsubscribe')
 
 
+class UID(Enum):
+    RANDOM = None
+    DEF = 1
+
 # TODO: use Pydantic (in general for dataclass and validation (ie also setting)
 @dataclass
 class Port:
@@ -120,7 +122,7 @@ class Port:
 #  * single pipe from p_in to p_out and in the middle ops.through (ie on_next, on_error...)
 #  * use a ConnectableObservable instead and exploit the .connect(), implementing .disconnect() ?!
 #    inspiration: https://github.com/ReactiveX/RxPY/blob/release/v1.6.x/rx/backpressure/pausable.py
-class Element(Observable, Observer):
+class Element(Observable, Observer, typing.Subject):
     # TODO: pass as argument to _process_msg, instead of only move_on
     # evaluate if is it necessary:
     #  * is raise exception inside _process_msg the same that pass error
@@ -138,10 +140,10 @@ class Element(Observable, Observer):
         OUT = 4
 
     def __init__(self,
-                 loop: typing.MapeLoop,
+                 loop: MapeLoop,
                  uid: str = None,
-                 ops_in: Optional[typing.OpsChain] = (),
-                 ops_out: Optional[typing.OpsChain] = ()
+                 ops_in: Optional[OpsChain] = (),
+                 ops_out: Optional[OpsChain] = ()
                  ) -> None:
         self._uid = uid
         self._loop = loop
@@ -168,7 +170,7 @@ class Element(Observable, Observer):
         Observable.__init__(self)
         Observer.__init__(self, self._p_in.input.on_next, self._p_in.input.on_error, self._p_in.input.on_completed)
 
-    def add_to_loop(self, loop: typing.MapeLoop):
+    def add_to_loop(self, loop: MapeLoop):
         return loop.add_element(self)
 
     move_to_loop = add_to_loop
@@ -214,15 +216,29 @@ class Element(Observable, Observer):
 
     def start(self, scheduler=None):
         if not self.is_running:
-            self._p_in.pipe = self._p_in.input.pipe(*self._p_in.operators)
+            # TODO: debug can be pre-pend here as ops.do_action() instead of subscribe ?!
+            self._p_in.pipe = self._p_in.input.pipe(
+                ops.filter(lambda item: isinstance(item, Message)),
+                # TODO: increment HOPS
+                *self._p_in.operators
+            )
 
-            self._p_in.disposable = self._p_in.pipe.subscribe(
+            sub_message = self._p_in.pipe.subscribe(
                 lambda value: self._on_next(value, self._p_out.input.on_next, **self._on_next_opt_kwargs),
                 # self._on_next,
                 self._on_error,
                 self._on_completed,
                 scheduler=scheduler
             )
+
+            # TODO: implement the logic of do_action (ie. real call).
+            # Maybe can be un external utility where pass self
+            sub_method_call = self._p_in.input.pipe(
+                ops.filter(lambda item: isinstance(item, CallMethod)),
+                ops.do_action(lambda item: item.exec(self))
+            ).subscribe(scheduler=scheduler)
+
+            self._p_in.disposable = CompositeDisposable(sub_message, sub_method_call)
 
             self._p_out.pipe = self._p_out.input.pipe(*self._p_out.operators)
             self._p_out.disposable = self._p_out.pipe.subscribe(self._p_out.output, scheduler=scheduler)

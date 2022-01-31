@@ -1,24 +1,17 @@
 from __future__ import annotations
 
-import rx
 import asyncio
 import logging
 import warnings
 
-from rx.subject import Subject
-from rx.core import Observer
-from rx import operators as ops
-from typing import Any, Callable, Optional, Union, Awaitable, Coroutine
-from rx.disposable import Disposable, CompositeDisposable
+from typing import Any, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple
 from rx.scheduler.eventloop import AsyncIOScheduler
-from typing import NamedTuple
-from dataclasses import dataclass
 
 from .application import App
 from .base_elements import *
 from .loop import Loop
-from .operators import *
-from .utils import *
+# from .operators import *
+from .utils import init_logger
 
 # Please make sure the version here remains the same as in project.cfg
 __version__ = '0.0.1b'

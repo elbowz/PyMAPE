@@ -9,7 +9,8 @@ from rx.core import typing
 
 import mape
 from mape import operators as mape_ops
-from mape.base_elements import UID_DEF, UID_RANDOM
+from mape.base_elements import UID
+from mape.typing import Message, CallMethod
 from mape.utils import LogObserver, init_logger
 
 # Take the same mape package logger setup (eg. handler and format)
@@ -23,7 +24,6 @@ logger.setLevel(logging.DEBUG)
 # mape lib debug
 mape.setup_logger()
 logging.getLogger('mape').setLevel(logging.DEBUG)
-
 
 """ FIXITURES """
 
@@ -56,19 +56,19 @@ class VirtualRoom:
 managed_element_room_a = VirtualRoom(20, 'A')
 managed_element_room_b = VirtualRoom(16, 'B')
 
-
 """ MAPE LOOPS AND ELEMENTS """
 
 # LOOP HEATER A
 heater_a = mape.Loop(uid='heater_a')
 
 
-class HeaterMonitor(mape.Monitor):
+class HeaterMonitor(mape.base_elements.Monitor):
 
     async def _read_loop(self, interval=6):
         """ Simulate callback """
         while True and self.is_running:
-            self._on_next(managed_element_room_a.current_temperature)
+            item = Message(value=managed_element_room_a.current_temperature, src=self.uid)
+            self._on_next(item)
             managed_element_room_a.tick()
             await asyncio.sleep(random.randint(1, 10))
 
@@ -84,6 +84,9 @@ class HeaterMonitor(mape.Monitor):
     def stop(self):
         super().stop()
 
+    def test_call_method(self, args0, args1, kwargs0, kwargs1=None):
+        print("real call to test_call_method", args0, args1, kwargs0, kwargs1)
+
 
 @heater_a.plan(
     # 'plan' name is reserved in the MapeLoop class
@@ -91,41 +94,52 @@ class HeaterMonitor(mape.Monitor):
     ops_in=mape_ops.debounce(5.0),
     # ops_out=mape_ops.do_action(lambda value: logger.info(f"ops_out decorator {value}")),
     param_self=True)
-def plan(value, on_next, self):
-    value = True if value < self.target_temp else False
-    on_next(value)
+def plan(item, on_next, self):
+    item.value = True if item.value < self.target_temp else False
+    on_next(item)
 
 
-@heater_a.execute(uid=UID_DEF, ops_in=mape_ops.distinct_until_changed(), param_self=True)
-def heater_execute(value, on_next, self):
-    self.managed_element_room.set_heater(value)
+@heater_a.execute(uid=UID.DEF, ops_in=mape_ops.distinct_until_changed(lambda item: item.value), param_self=True)
+def heater_execute(item, on_next, self):
+    self.managed_element_room.set_heater(item.value)
 
 
 # LOOP HEATER B
 heater_b = mape.Loop(uid='heater_b')
 
 
-@heater_b.monitor(uid=UID_DEF, param_self=True)
-def monitor_b(value, on_next, self, something_useful=None):
+@heater_b.monitor(uid=UID.DEF, param_self=True)
+def monitor_b(item, on_next, self, something_useful=None):
     """ Simulate polling (ie read on call) """
     read_temperature = self.managed_element_room.current_temperature
-    on_next(read_temperature)
+    on_next(Message(value=read_temperature, src=self.uid))
 
 
-class AnalyzeAVG(mape.Analyze):
+class AnalyzeAVG(mape.base_elements.Analyze):
     def __init__(self, loop, window_count=6, uid: str = 'AnalyzeAVG', ) -> None:
-
         ops_out_avg = (
             mape_ops.window_with_count(count=window_count),
-            mape_ops.flat_map(lambda obs: obs.pipe(mape_ops.average()))
+            mape_ops.flat_map(
+                lambda obs: obs.pipe(
+                    mape_ops.to_list(),
+                    mape_ops.map(self._compute_avg_msg)
+                )
+            )
         )
         super().__init__(loop, uid, ops_out=ops_out_avg)
 
+    def _compute_avg_msg(self, items):
+        from functools import reduce
+        items_sum = reduce(lambda acc, item: acc + item.value, items, 0)
+
+        # Keep src and timestamp from first Message in items
+        return Message(value=(items_sum/len(items)), src=items[0].src, timestamp=items[0].timestamp)
+
 
 # Same name (heater_execute) used in heater_a...allowed like following var (re)assignement
-@heater_b.execute(uid=UID_DEF, ops_in=mape_ops.distinct_until_changed(), param_self=True)
-def heater_execute(value, on_next, self):
-    self.managed_element_room.set_heater(value)
+@heater_b.execute(uid=UID.DEF, ops_in=mape_ops.distinct_until_changed(), param_self=True)
+def heater_execute(item, on_next, self):
+    self.managed_element_room.set_heater(item.value)
 
 
 # LOOP HEATER B
@@ -135,8 +149,7 @@ start_time = asyncio.get_event_loop().time()
 
 
 @master.analyze(uid='master_analyze', param_self=True)
-def master_a(value, on_next, self):
-
+def master_a(item, on_next, self):
     aioloop = mape.loop or asyncio.get_event_loop()
 
     current_time = aioloop.time()
@@ -144,7 +157,8 @@ def master_a(value, on_next, self):
         print("TIME STOP", start_time, current_time)
         heater_a.heater_contact_plan.stop()
         heater_b.AnalyzeAVG.stop()
-        on_next(False)
+        item.value = False
+        on_next(item)
     else:
         print("TIME START", start_time, current_time)
         heater_a.heater_contact_plan.start()
@@ -155,7 +169,7 @@ async def async_main(*args, **kwargs):
     logger.info(f"{'=' * 6} HEATER A {'=' * 6}")
     monitor = HeaterMonitor(loop=heater_a, uid='m_monitor')
 
-    # monitor.debug(mape.BaseMapeElement2.Debug.OUT)
+    monitor.debug(mape.Element.Debug.IN)
     plan.debug(mape.Element.Debug.IN)
     heater_a.heater_execute.debug(mape.Element.Debug.IN)
 
@@ -169,57 +183,63 @@ async def async_main(*args, **kwargs):
 
     # ... or
     monitor.subscribe(plan, scheduler=mape.scheduler)
-    plan.subscribe(heater_a.heater_execute,  scheduler=mape.scheduler)
+    plan.subscribe(heater_a.heater_execute, scheduler=mape.scheduler)
 
-    # logger.info('TEST DEBOUNCE ON PLAN IN')
-    # plan.port_in.on_next(22)
-    # plan.port_in.on_next(22)
-    # plan.port_in.on_next(22)
-    # plan.port_in.on_next(22)
-    # await asyncio.sleep(6)
-    #
-    # logger.info('TEST DISTINCT ON HEATER_EXECUTE IN')
-    # heater_a.heater_execute.port_in.on_next(True)
-    # heater_a.heater_execute.port_in.on_next(True)
-    # heater_a.heater_execute.port_in.on_next(True)
-    # heater_a.heater_execute.port_in.on_next(True)
-    # await asyncio.sleep(1)
+    logger.info('TEST DEBOUNCE ON PLAN IN')
+    plan.port_in.on_next(Message(value=22))
+    plan.port_in.on_next(Message(value=22))
+    plan.on_next(Message(value=22))
+    plan.on_next(Message(value=22))
+    print(type(plan._on_next), plan._on_next)
+    print(type(monitor._on_next), monitor._on_next)
+    await asyncio.sleep(6)
+
+    logger.info('TEST DISTINCT ON HEATER_EXECUTE IN')
+    heater_a.heater_execute.port_in.on_next(Message(value=True))
+    heater_a.heater_execute.port_in.on_next(Message(value=True))
+    heater_a.heater_execute.on_next(Message(value=True))
+    heater_a.heater_execute.on_next(Message(value=True))
+    await asyncio.sleep(1)
 
     monitor.start(scheduler=mape.scheduler)
 
-    logger.info(f"{'=' * 6} HEATER B {'=' * 6}")
+    logger.info('TEST CALLMETHOD ITEM')
+    monitor.on_next(CallMethod(name='test_call_method', args=['args0', 'args1'], kwargs={'kwargs0': 'kwargs0'}))
 
-    monitor_b.debug(mape.Element.Debug.OUT)
-    monitor_b.managed_element_room = managed_element_room_b
-    monitor_b.start(scheduler=mape.scheduler)
+    # logger.info(f"{'=' * 6} HEATER B {'=' * 6}")
+    #
+    # monitor_b.debug(mape.Element.Debug.OUT)
+    # monitor_b.managed_element_room = managed_element_room_b
+    # monitor_b.start(scheduler=mape.scheduler)
+    #
+    # analyze_avg = AnalyzeAVG(heater_b, 6)
+    # analyze_avg.debug(mape.Element.Debug.OUT)
+    # heater_b.heater_execute.managed_element_room = managed_element_room_b
+    #
+    # start = rx.timer(4.0, 2.0).pipe(
+    #     mape_ops.map(lambda _: Message()),
+    #     mape_ops.through(monitor_b),
+    #     mape_ops.through(analyze_avg),
+    #     mape_ops.map(lambda item: Message(value=item.value < 16)),
+    #     mape_ops.through(heater_b.heater_execute)
+    # ).subscribe(scheduler=mape.scheduler)
 
-    analyze_avg = AnalyzeAVG(heater_b, 6)
-    analyze_avg.debug(mape.Element.Debug.OUT)
-    heater_b.heater_execute.managed_element_room = managed_element_room_b
-
-    start = rx.timer(4.0, 2.0).pipe(
-        mape_ops.through(monitor_b),
-        mape_ops.through(analyze_avg),
-        mape_ops.map(lambda temp: temp < 16),
-        mape_ops.through(heater_b.heater_execute)
-    ).subscribe(scheduler=mape.scheduler)
-
-    # Direct call (force a read in this case)
-    logger.info('TEST FORCE HEATER B READ (direct call to _on_next())')
-    monitor_b(None, something_useful='something to pass')
-
-    logger.info(f"{'=' * 6} MASTER LOOP {'=' * 6}")
-    heater_a['m_monitor'].subscribe(master.master_analyze)
-    heater_b.monitor_b.subscribe(master.master_analyze)
-    master.master_analyze.subscribe(heater_a.heater_execute)
-    master.master_analyze.subscribe(heater_b.heater_execute)
-    master.master_analyze.start()
-
-    for loop in mape.app:
-        print("loop", loop.uid)
-        for element in loop:
-            print("element", element.uid)
-    print("I'm full path", mape.app['heater_a.heater_contact_plan'])
+    # # Direct call (force a read in this case)
+    # logger.info('TEST FORCE HEATER B READ (direct call to _on_next())')
+    # monitor_b(None, something_useful='something to pass')
+    #
+    # logger.info(f"{'=' * 6} MASTER LOOP {'=' * 6}")
+    # heater_a['m_monitor'].subscribe(master.master_analyze)
+    # heater_b.monitor_b.subscribe(master.master_analyze)
+    # master.master_analyze.subscribe(heater_a.heater_execute)
+    # master.master_analyze.subscribe(heater_b.heater_execute)
+    # master.master_analyze.start()
+    #
+    # for loop in mape.app:
+    #     print("loop", loop.uid)
+    #     for element in loop:
+    #         print("element", element.uid)
+    # print("I'm full path", mape.app['heater_a.heater_contact_plan'])
 
 
 if __name__ == '__main__':
