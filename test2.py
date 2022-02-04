@@ -165,6 +165,46 @@ def master_a(item, on_next, self):
         heater_b.AnalyzeAVG.start()
 
 
+# LOOP 4 TEST
+test_loop = mape.Loop(uid='test')
+
+from mape.base_elements import to_element_cls, to_monitor_cls, to_execute_cls
+
+
+@test_loop.register
+@to_execute_cls(
+    # element_class=mape.base_elements.Plan,
+    # default_uid=UID.DEF,
+    default_ops_in=mape_ops.do_action(lambda item: print("in", item)),
+    default_ops_out=mape_ops.do_action(lambda item: print("out", item)),
+    param_self=True)
+def my_to_element_class(item, on_next, self, something_useful=None):
+    # print("my_to_element_class", item, on_next, self, something_useful)
+    on_next(item)
+
+
+@test_loop.add_func(
+    # element_class=mape.base_elements.Plan,
+    # default_uid=UID.DEF,
+    ops_in=mape_ops.do_action(lambda item: print("in", item)),
+    ops_out=mape_ops.do_action(lambda item: print("out", item)),
+    param_self=True)
+def my_func_register(item, on_next, self, something_useful=None):
+    print("func_register", item, on_next, self, something_useful)
+    on_next(item)
+
+
+@test_loop.register
+class MyClassTestRegister(mape.base_elements.Analyze):
+    pass
+
+
+@test_loop.execute(uid=UID.DEF, ops_in=mape_ops.distinct_until_changed(), param_self=True)
+def heater_execute_test(item, on_next, self):
+    """ Docstring of heater_execute_test """
+    self.managed_element_room.set_heater(item.value)
+
+
 async def async_main(*args, **kwargs):
     logger.info(f"{'=' * 6} HEATER A {'=' * 6}")
     monitor = HeaterMonitor(loop=heater_a, uid='m_monitor')
@@ -206,40 +246,51 @@ async def async_main(*args, **kwargs):
     logger.info('TEST CALLMETHOD ITEM')
     monitor.on_next(CallMethod(name='test_call_method', args=['args0', 'args1'], kwargs={'kwargs0': 'kwargs0'}))
 
-    # logger.info(f"{'=' * 6} HEATER B {'=' * 6}")
-    #
-    # monitor_b.debug(mape.Element.Debug.OUT)
-    # monitor_b.managed_element_room = managed_element_room_b
-    # monitor_b.start(scheduler=mape.scheduler)
-    #
-    # analyze_avg = AnalyzeAVG(heater_b, 6)
-    # analyze_avg.debug(mape.Element.Debug.OUT)
-    # heater_b.heater_execute.managed_element_room = managed_element_room_b
-    #
-    # start = rx.timer(4.0, 2.0).pipe(
-    #     mape_ops.map(lambda _: Message()),
-    #     mape_ops.through(monitor_b),
-    #     mape_ops.through(analyze_avg),
-    #     mape_ops.map(lambda item: Message(value=item.value < 16)),
-    #     mape_ops.through(heater_b.heater_execute)
-    # ).subscribe(scheduler=mape.scheduler)
+    logger.info(f"{'=' * 6} HEATER B {'=' * 6}")
 
-    # # Direct call (force a read in this case)
-    # logger.info('TEST FORCE HEATER B READ (direct call to _on_next())')
-    # monitor_b(None, something_useful='something to pass')
-    #
-    # logger.info(f"{'=' * 6} MASTER LOOP {'=' * 6}")
-    # heater_a['m_monitor'].subscribe(master.master_analyze)
-    # heater_b.monitor_b.subscribe(master.master_analyze)
-    # master.master_analyze.subscribe(heater_a.heater_execute)
-    # master.master_analyze.subscribe(heater_b.heater_execute)
-    # master.master_analyze.start()
-    #
-    # for loop in mape.app:
-    #     print("loop", loop.uid)
-    #     for element in loop:
-    #         print("element", element.uid)
-    # print("I'm full path", mape.app['heater_a.heater_contact_plan'])
+    monitor_b.debug(mape.Element.Debug.OUT)
+    monitor_b.managed_element_room = managed_element_room_b
+    monitor_b.start(scheduler=mape.scheduler)
+
+    analyze_avg = AnalyzeAVG(heater_b, 6)
+    analyze_avg.debug(mape.Element.Debug.OUT)
+    heater_b.heater_execute.managed_element_room = managed_element_room_b
+
+    start = rx.timer(4.0, 2.0).pipe(
+        mape_ops.map(lambda _: Message()),
+        mape_ops.through(monitor_b),
+        mape_ops.through(analyze_avg),
+        mape_ops.map(lambda item: Message(value=item.value < 16)),
+        mape_ops.through(heater_b.heater_execute)
+    ).subscribe(scheduler=mape.scheduler)
+
+    # Direct call (force a read in this case)
+    logger.info('TEST FORCE HEATER B READ (direct call to _on_next())')
+    monitor_b(None, something_useful='something to pass')
+
+    logger.info(f"{'=' * 6} MASTER LOOP {'=' * 6}")
+    heater_a['m_monitor'].subscribe(master.master_analyze)
+    heater_b.monitor_b.subscribe(master.master_analyze)
+    master.master_analyze.subscribe(heater_a.heater_execute)
+    master.master_analyze.subscribe(heater_b.heater_execute)
+    master.master_analyze.start()
+
+    for loop in mape.app:
+        print("loop", loop.uid)
+        for element in loop:
+            print("element", element.uid)
+    print("I'm full path", mape.app['heater_a.heater_contact_plan'])
+
+    print(my_to_element_class, isinstance(my_to_element_class, mape.base_elements.Execute))
+    my_to_element_class.on_next(Message(value=1))
+    my_to_element_class(Message(value=3), something_useful='something to pass')
+    print("--------------")
+    print(mape.app.test.elements)
+    print("--------------")
+    print(isinstance(heater_execute_test, mape.base_elements.Execute))
+    my_func_register.start()
+    my_func_register.on_next(Message(value=2))
+    help(heater_execute_test.__call__)
 
 
 if __name__ == '__main__':
