@@ -30,7 +30,7 @@ def log_record_enrich(record):
     return True
 
 
-def init_logger(name: str, lvl: int = logging.WARNING, fmt: str = _fmt) -> logging.Logger:
+def init_logger(name: str = None, lvl: int = logging.WARNING, fmt: str = _fmt) -> logging.Logger:
     """
     Set base/root level logger for a package name
     :param name: base logger name (ie. package name)

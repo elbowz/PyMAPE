@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple
+from typing import Any, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple, Tuple
 
 import rx
 from rx.subject import Subject
@@ -9,6 +9,7 @@ from rx.disposable import Disposable, CompositeDisposable
 from rx.operators import *
 
 from .base_elements import Element
+from .typing import Mapper, OpsChain, DestMapper
 
 MapeElement = Union[Subject, Element]
 
@@ -31,3 +32,62 @@ def through(subject: MapeElement):
 sitm = through
 
 
+def group_and_pipe(operators: OpsChain, key_mapper: Mapper = None):
+    key_mapper = key_mapper or (lambda item: item.src)
+    ops_in = list(pipe) if isinstance(pipe, Tuple) else [pipe]
+
+    def _group_and_pipe(source):
+        def subscribe(observer, scheduler=None):
+            return source.pipe(
+                group_by(key_mapper),
+                flat_map(
+                    lambda grp: grp.pipe(*operators)
+                )).subscribe(
+                observer.on_next,
+                observer.on_error,
+                observer.on_completed,
+                scheduler)
+
+        return rx.create(subscribe)
+
+    return _group_and_pipe
+
+
+reverse_proxy = group_and_pipe
+
+
+# TODO: Implement a default dest_mapper (eg. based on dst, if None src)
+def gateway(dest_mapper: DestMapper):
+
+    def _gateway(source):
+        def subscribe(observer, scheduler=None):
+            from collections.abc import Iterable
+
+            if isinstance(1, Iterable):
+                print("ciao")
+
+            def on_next(item):
+                dests = dest_mapper(item)
+                if not isinstance(dests, Iterable):
+                    # Convert dest in a tuple
+                    dests = (dests,)
+
+                for dest in dests:
+                    dest.on_next(item)
+                observer.on_next(item)
+
+            def on_error(error):
+                observer.on_error(error)
+
+            def on_completed():
+                observer.on_completed()
+
+            return source.subscribe(
+                on_next,
+                on_error,
+                on_completed,
+                scheduler)
+
+        return rx.create(subscribe)
+
+    return _gateway

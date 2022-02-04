@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import functools
 import logging
-from typing import Type, Any, List, Tuple, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple, Final
+from typing import Type, Any, List, Tuple, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple, Final, overload, TypeVar
 from enum import Flag, Enum
+from functools import partial, wraps
 
 import rx
 from rx.subject import Subject
@@ -107,9 +107,16 @@ class UID(Enum):
     RANDOM = None
     DEF = 1
 
+    # TODO: remove, because never used
+    @dataclass
+    class MANUAL:
+        value: str = ''
+
+
 # TODO: use Pydantic (in general for dataclass and validation (ie also setting)
 @dataclass
 class Port:
+    # TODO: add method to manipulate operators (append, prepend, etc...) and update pipe/input/subscribe?!
     input: Subject = None
     pipe: Observable = None
     operators: List[Callable[[Any], Any]] = field(default_factory=lambda: [])
@@ -141,11 +148,13 @@ class Element(Observable, Observer, typing.Subject):
 
     def __init__(self,
                  loop: MapeLoop,
-                 uid: str = None,
+                 uid: str | UID = None,
                  ops_in: Optional[OpsChain] = (),
                  ops_out: Optional[OpsChain] = ()
                  ) -> None:
-        self._uid = uid
+        uid = uid if uid != UID.DEF else self.__class__.__name__
+        self._uid = uid if not hasattr(uid, 'value') else uid.value
+
         self._loop = loop
         self.is_running = False
         self._debug = GenericObject()
@@ -157,6 +166,7 @@ class Element(Observable, Observer, typing.Subject):
             raise ValueError(f"'{uid}' already taken, or name is protected")
 
         # Accept pipe(), ops(), (ops(),)
+        # TODO: I think is not so good, and not always it works
         ops_in = list(ops_in) if isinstance(ops_in, Tuple) else [ops_in]
         ops_out = list(ops_out) if isinstance(ops_out, Tuple) else [ops_out]
 
@@ -175,7 +185,7 @@ class Element(Observable, Observer, typing.Subject):
 
     move_to_loop = add_to_loop
 
-    def debug(self, lvl: Element.Debug, module_name=None):
+    def debug(self, lvl: Element.Debug = Debug.DISABLE, module_name=None):
         module_name = module_name or caller_module_name()
 
         if Element.Debug.IN in lvl:
@@ -287,12 +297,16 @@ class Element(Observable, Observer, typing.Subject):
         self._on_next_opt_kwargs = kwargs
 
     @property
-    def uid(self):
+    def uid(self) -> str:
         return self._uid
 
     @property
-    def loop(self):
+    def loop(self) -> MapeLoop:
         return self._loop
+
+    @property
+    def path(self) -> str:
+        return f"{self.loop.uid}.{self.uid}"
 
     """ Port in and out aliases """
 
@@ -343,19 +357,116 @@ class StartOnInit(Element):
 
 class Monitor(Element):
     prefix: str = 'm_'
-    pass
 
 
 class Analyze(StartOnSubscribe):
     prefix: str = 'a_'
-    pass
 
 
 class Plan(StartOnSubscribe):
     prefix: str = 'p_'
-    pass
 
 
 class Execute(StartOnInit):
     prefix: str = 'e_'
-    pass
+
+
+""" Allow display correct signature in IDE """
+# ~/.local/share/JetBrains/IntelliJIdea2021.3/python/helpers/typeshed/stdlib/dataclasses.pyi
+
+@overload
+def to_element_cls(func: Callable) -> Type[Element]: ...
+
+
+@overload
+def to_element_cls(func: None) -> Callable[[Callable], Type[Element]]: ...
+
+
+@overload
+def to_element_cls(
+        *,
+        element_class=...,
+        default_uid: str | UID = ...,
+        default_ops_in: Optional[OpsChain] = ...,
+        default_ops_out: Optional[OpsChain] = ...,
+        param_self: bool = ...
+) -> Type[Element]: ...
+
+
+""" END  """
+
+
+def to_element_cls(func=None, /, *,
+                   element_class=Element,
+                   default_uid: str | UID = UID.DEF,
+                   default_ops_in: Optional[OpsChain] = (),
+                   default_ops_out: Optional[OpsChain] = (),
+                   param_self: bool = False) -> Type[Element] | Callable[..., Type[Element]]:
+    """ Create the decorator and manage the call w/wo parentheses (ie @decorator vs @decorator()) """
+    if func is None:
+        # Called as @decorator(), with parentheses.
+        # Return a function with all args set except 'func',
+        # the second call (ie. @decorator(args)(func)) will set 'func'.
+        return partial(to_element_cls,
+                       element_class=element_class,
+                       default_uid=default_uid,
+                       default_ops_in=default_ops_in,
+                       default_ops_out=default_ops_out,
+                       param_self=param_self)
+
+    # Called as @decorator, without parentheses
+    return make_func_class(func, element_class, default_uid, default_ops_in, default_ops_out, param_self)
+
+
+# TODO: maybe can be passed *args, **kwargs (since default_uid)
+def make_func_class(func: Callable,
+                    element_class: Type[Element],
+                    default_uid: str | UID = UID.DEF,
+                    default_ops_in: Optional[OpsChain] = (),
+                    default_ops_out: Optional[OpsChain] = (),
+                    param_self: bool = False
+                    ) -> Type[Element]:
+
+    if default_uid == UID.DEF:
+        default_uid = func.__name__
+
+    # Discover what parameters (name and default) has function signature
+    # import inspect
+    # for param in inspect.signature(func).parameters.values():
+    #     print("param_name", param.name, param.default)
+
+    class ElementFunc(element_class):
+        def __init__(self,
+                     loop: MapeLoop,
+                     uid: str | UID = default_uid,
+                     ops_in: Optional[OpsChain] = default_ops_in,
+                     ops_out: Optional[OpsChain] = default_ops_out
+                     ) -> None:
+            super().__init__(loop, uid, ops_in, ops_out)
+
+            if param_self:
+                self._on_next_opt_kwargs = {'self': self}
+
+        @staticmethod
+        @wraps(func)
+        def _on_next(*args, **kwargs):
+            func(*args, **kwargs)
+
+    # Code used when we act on object (and not class) level
+    # Bound as a real "object method" passing self as first arg
+    # func = types.MethodType(func, element)
+    # setattr(element, '_on_next', func)
+    # or: element._on_next = func
+
+    return ElementFunc
+
+
+# Dinamically add to module
+# import sys
+# sys.modules[__name__].ciao = "ciao"
+
+
+to_monitor_cls = partial(to_element_cls, element_class=Monitor)
+to_analyze_cls = partial(to_element_cls, element_class=Analyze)
+to_plan_cls = partial(to_element_cls, element_class=Plan)
+to_execute_cls = partial(to_element_cls, element_class=Execute)

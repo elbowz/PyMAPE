@@ -11,6 +11,9 @@ class App:
         if self.has_loop(uid) or hasattr(self, uid):
             return False
 
+        if loop in loop.app:
+            del loop.app.loops[loop.uid]
+
         loop._uid = uid
         loop._app = self
         self._loops[uid] = loop
@@ -51,4 +54,8 @@ class App:
 
     def __iter__(self):
         return iter(self._loops.values())
+
+    @property
+    def loops(self):
+        return self._loops
 

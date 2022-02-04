@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -10,13 +12,14 @@ T2 = TypeVar('T2')
 
 OpsChain = Union[Tuple, Callable]
 Mapper = Callable[[T1], T2]
-DestMapper = Callable[[T1], Observer]
+DestMapper = Callable[[T1], Union[List[Observer], Observer]]
 
 
 @dataclass
 class Item:
     src: str = None
     dst: str = None
+    # TODO: or list?!
     hops: int = 0
     timestamp: float = field(default_factory=lambda: datetime.timestamp(datetime.now()))
 
@@ -115,20 +118,4 @@ class MapeLoop(ABC):
                 ops_out: Optional[OpsChain] = (),
                 param_self=False
                 ) -> Any:
-        raise NotImplementedError
-
-    @abstractmethod
-    def _add_func_decorator(self, func, element_class, *args, **kwargs):
-        """ Create the decorator and manage the call w/wo parentheses (ie @decorator vs @decorator()) """
-        raise NotImplementedError
-
-    @abstractmethod
-    def _add_func(self,
-                  # TODO: create an alias
-                  func,
-                  element_class: Type[Union[Any]],
-                  uid=None,
-                  ops_in: Optional[OpsChain] = (),
-                  ops_out: Optional[OpsChain] = (),
-                  param_self=False) -> Any:
         raise NotImplementedError

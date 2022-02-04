@@ -1,15 +1,21 @@
+from __future__ import annotations
+
+import functools
 import logging
+import inspect
 from functools import wraps, partial
-from typing import Type, Any, Tuple, List, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple
+from typing import Type, Any, Tuple, List, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple, TypeVar
 import types
 
 import mape
 
-from .base_elements import Element, Monitor, Analyze, Plan, Execute, UID
+from .base_elements import Element, Monitor, Analyze, Plan, Execute, UID, to_element_cls, make_func_class
 from .utils import generate_uid
 from .typing import MapeLoop, OpsChain
 
 logger = logging.getLogger(__name__)
+
+TElement = TypeVar('TElement')
 
 
 class Loop(MapeLoop):
@@ -37,13 +43,14 @@ class Loop(MapeLoop):
         if self.has_element(uid) or hasattr(self, uid):
             return False
 
+        if element in element._loop:
+            del element.loop.elements[element.uid]
+
         element._uid = uid
         element._loop = self
         self._elements[uid] = element
 
         return uid
-
-    register = add_element
 
     def has_element(self, element):
         uid = element.uid if hasattr(element, 'uid') else element
@@ -81,86 +88,131 @@ class Loop(MapeLoop):
     def elements(self):
         return self._elements
 
-    def monitor(self, func=None, /, *,
-                uid=None, ops_in: Optional[OpsChain] = (), ops_out: Optional[OpsChain] = (),
-                param_self=False
-                ) -> Element:
-        return self._add_func_decorator(func, Monitor, uid=uid, ops_in=ops_in, ops_out=ops_out, param_self=param_self)
-
-    def analyze(self, func=None, /, *,
-                uid=None, ops_in: Optional[OpsChain] = (), ops_out: Optional[OpsChain] = (),
-                param_self=False
-                ) -> Element:
-        return self._add_func_decorator(func, Analyze, uid=uid, ops_in=ops_in, ops_out=ops_out, param_self=param_self)
-
-    def plan(self, func=None, /, *,
-             uid=None, ops_in: Optional[OpsChain] = (), ops_out: Optional[OpsChain] = (), param_self=False
-             ) -> Element:
-        return self._add_func_decorator(func, Plan, uid=uid, ops_in=ops_in, ops_out=ops_out, param_self=param_self)
-
-    def execute(self,
-                func=None,
-                /, *,
-                uid=None,
+    def monitor(self,
+                func: Callable = None, /, *,
+                uid: str | UID = UID.DEF,
                 ops_in: Optional[OpsChain] = (),
                 ops_out: Optional[OpsChain] = (),
-                param_self=False
-                ) -> Element:
-        return self._add_func_decorator(func, Execute, uid=uid, ops_in=ops_in, ops_out=ops_out, param_self=param_self)
+                param_self: bool = False
+                ) -> Monitor:
+        """ Function decorator """
 
-    def _add_func_decorator(self, func, element_class, *args, **kwargs):
-        """ Create the decorator and manage the call w/wo parentheses (ie @decorator vs @decorator()) """
+        return self.add_func(func,
+                             element_class=Monitor,
+                             uid=uid,
+                             ops_in=ops_in,
+                             ops_out=ops_out,
+                             param_self=param_self)
+
+    def analyze(self,
+                func: Callable = None, /, *,
+                uid: str | UID = UID.DEF,
+                ops_in: Optional[OpsChain] = (),
+                ops_out: Optional[OpsChain] = (),
+                param_self: bool = False
+                ) -> Analyze:
+        """ Function decorator """
+
+        return self.add_func(func,
+                             element_class=Analyze,
+                             uid=uid,
+                             ops_in=ops_in,
+                             ops_out=ops_out,
+                             param_self=param_self)
+
+    def plan(self,
+             func: Callable = None, /, *,
+             uid: str | UID = UID.DEF,
+             ops_in: Optional[OpsChain] = (),
+             ops_out: Optional[OpsChain] = (),
+             param_self: bool = False
+             ) -> Plan:
+        """ Function decorator """
+
+        return self.add_func(func,
+                             element_class=Plan,
+                             uid=uid,
+                             ops_in=ops_in,
+                             ops_out=ops_out,
+                             param_self=param_self)
+
+    def execute(self,
+                func: Callable = None, /, *,
+                uid: str | UID = UID.DEF,
+                ops_in: Optional[OpsChain] = (),
+                ops_out: Optional[OpsChain] = (),
+                param_self: bool = False
+                ) -> Execute:
+        """ Function decorator """
+
+        return self.add_func(func,
+                             element_class=Execute,
+                             uid=uid,
+                             ops_in=ops_in,
+                             ops_out=ops_out,
+                             param_self=param_self)
+
+    # Alternative method to declare execute, but missing signature/type hint
+    # execute_test = functools.partialmethod(add_func, element_class=Execute)
+
+    # TODO: provare con l'overload una per ElementFunc e una per tutte le altre classi
+    def register(self,
+                 cls: Type[TElement] = None,
+                 /, *,
+                 uid: str | UID = UID.DEF,
+                 ops_in: Optional[OpsChain] = (),
+                 ops_out: Optional[OpsChain] = ()
+                 ) -> Type[TElement] | TElement:
+        """ Class decorator """
+        if cls is None:
+            return partial(self.register,
+                           uid=uid,
+                           ops_in=ops_in,
+                           ops_out=ops_out)
+
+        kwargs = {}
+
+        args_name = inspect.signature(cls.__init__).parameters.keys()
+
+        # Append (if present in the signature) additional cls constructor args for obj initialization
+        if 'uid' in args_name and cls.__name__ != 'ElementFunc':
+            # Avoid if Element cls generated by func.
+            # uid with UID.DEF already set with func name
+            kwargs['uid'] = uid
+        if 'ops_in' in args_name and ops_in:
+            kwargs['ops_in'] = ops_in
+        if 'ops_out' in args_name and ops_out:
+            kwargs['ops_out'] = ops_out
+
+        element = cls(loop=self, **kwargs)
+
+        return element if cls.__name__ == 'ElementFunc' else cls
+
+    register_cls = register
+
+    def add_func(self,
+                 func: Callable = None,
+                 /, *,
+                 element_class: Type[TElement] = Element,
+                 uid: str | UID = UID.DEF,
+                 ops_in: Optional[OpsChain] = (),
+                 ops_out: Optional[OpsChain] = (),
+                 param_self: bool = False) -> TElement:
+        """ Function decorator """
+
         if func is None:
-            # Called as @decorator(), with parentheses.
-            # Return a function with all args set except 'func',
-            # the second call (ie. @decorator(args)(func)) will set 'func'.
-            return partial(self._add_func_decorator, element_class=element_class, *args, **kwargs)
+            return partial(self.add_func,
+                           element_class=element_class,
+                           uid=uid,
+                           ops_in=ops_in,
+                           ops_out=ops_out,
+                           param_self=param_self)
 
-        # Called as @decorator, without parentheses
-        return self._add_func(func, element_class, *args, **kwargs)
+        cls = make_func_class(func,
+                             element_class=element_class,
+                             default_uid=uid,
+                             default_ops_in=ops_in,
+                             default_ops_out=ops_out,
+                             param_self=param_self)
 
-    def _add_func(self,
-                  # TODO: create an alias
-                  func,
-                  element_class: Type[Union[Any]],
-                  uid=UID.DEF,
-                  ops_in: Optional[OpsChain] = (),
-                  ops_out: Optional[OpsChain] = (),
-                  param_self=False) -> Element:
-
-        # discover what parameters (name and default) has function signature
-        # import inspect
-        # for param in inspect.signature(func).parameters.values():
-        #     print("param_name", param.name, param.default)
-
-        if uid == UID.DEF:
-            uid = func.__name__
-        # UID_RANDOM or str is managed directly by Element()
-
-        # if uid is None and self.has_element(func.__name__):
-        #     # Uid not specified and fallback name function not usable (conflict).
-        #     element_uid = generate_uid(self._elements, prefix=element_class.prefix)
-        #     logging.warning(f"Function_name '{func.__name__}' already used in '{self.uid}' loop. "
-        #                     f"Used '{element_uid}' as uid")
-        #
-        # elif self.has_element(uid):
-        #     raise ValueError(f"Element uid '{element_uid}' in '{self.uid}' loop already taken,"
-        #                      f" please provide an alternative uid, or leave blank for an autogenerated")
-        #
-        # elif hasattr(self, element_uid):
-        #     raise ValueError(f"Element uid '{element_uid}' attr name reserved in object loop.")
-
-        element: Element = element_class(loop=self, uid=uid, ops_in=ops_in, ops_out=ops_out)
-
-        param_self and element.add_param_to_on_next_call({'self': element})
-        # Bound as a real "object method" passing self as first arg
-        # func = types.MethodType(func, element)
-        setattr(element, '_on_next', func)
-        # or: element._on_next = func
-
-        # @wraps(func)
-        # def wrapper(*args, **kwargs):
-        #     log.log(level, logmsg)
-        #     return func(*args, **kwargs)
-        # return wrapper
-        return element
+        return self.register(cls)
