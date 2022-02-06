@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import inspect
+import asyncio
 from typing import Type, Any, List, Tuple, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple, Final, overload, TypeVar
 from enum import Flag, Enum
 from functools import partial, wraps
@@ -156,6 +158,7 @@ class Element(Observable, Observer, typing.Subject):
         self._uid = uid if not hasattr(uid, 'value') else uid.value
 
         self._loop = loop
+        self._aioloop = asyncio.get_event_loop()
         self.is_running = False
         self._debug = GenericObject()
 
@@ -173,9 +176,6 @@ class Element(Observable, Observer, typing.Subject):
         # Port in and out
         self._p_in = Port(input=Subject(), operators=ops_in)
         self._p_out = Port(input=Subject(), operators=ops_out, output=Subject())
-
-        # Additional params/kwargs passed to _on_next()
-        self._on_next_opt_kwargs = {}
 
         Observable.__init__(self)
         Observer.__init__(self, self._p_in.input.on_next, self._p_in.input.on_error, self._p_in.input.on_completed)
@@ -234,7 +234,7 @@ class Element(Observable, Observer, typing.Subject):
             )
 
             sub_message = self._p_in.pipe.subscribe(
-                lambda value: self._on_next(value, self._p_out.input.on_next, **self._on_next_opt_kwargs),
+                lambda value: self._on_next(value, self._p_out.input.on_next),
                 # self._on_next,
                 self._on_error,
                 self._on_completed,
@@ -273,7 +273,7 @@ class Element(Observable, Observer, typing.Subject):
 
     """ Called after [port in] => [pipe in] => [_on_next()] => [pipe out] => [port out] """
 
-    def _on_next(self, value: Any, on_next: Optional[Callable] = None, *args, **kwargs) -> None:
+    def _on_next(self, value: Any, on_next: Optional[Callable] = None, *args, **kwargs) -> Any:
         """ Override to add your business logic """
         on_next = on_next or self._p_out.input.on_next
         on_next(value)
@@ -283,18 +283,13 @@ class Element(Observable, Observer, typing.Subject):
     #     move_on(value)
 
     def __call__(self, value, *args, **kwargs):
-        new_kwargs = {**self._on_next_opt_kwargs, **kwargs}
-        self._on_next(value, *args, on_next=self._p_out.input.on_next, **new_kwargs)
+        return self._on_next(value, on_next=self._p_out.input.on_next, *args, **kwargs)
 
     def _on_error(self, error: Exception) -> None:
         self._p_out.input.on_error(error)
 
     def _on_completed(self) -> None:
         self._p_out.input.on_completed()
-
-    def add_param_to_on_next_call(self, kwargs):
-        """ Pass a dict with key: value (as param=value) to pass during _on_next() calling. """
-        self._on_next_opt_kwargs = kwargs
 
     @property
     def uid(self) -> str:
@@ -419,7 +414,7 @@ def to_element_cls(func=None, /, *,
 
 
 # TODO: maybe can be passed *args, **kwargs (since default_uid)
-def make_func_class(func: Callable,
+def make_func_class(func: Callable | Coroutine,
                     element_class: Type[Element],
                     default_uid: str | UID = UID.DEF,
                     default_ops_in: Optional[OpsChain] = (),
@@ -444,13 +439,24 @@ def make_func_class(func: Callable,
                      ) -> None:
             super().__init__(loop, uid, ops_in, ops_out)
 
+            # Additional params/kwargs passed to func()
+            self._on_next_opt_kwargs = {}
+
             if param_self:
                 self._on_next_opt_kwargs = {'self': self}
 
-        @staticmethod
         @wraps(func)
-        def _on_next(*args, **kwargs):
-            func(*args, **kwargs)
+        def _on_next(self, *args, **kwargs) -> Any | Awaitable:
+            new_kwargs = {**self._on_next_opt_kwargs, **kwargs}
+
+            if inspect.iscoroutinefunction(func):
+                return self._aioloop.create_task(func(*args, **new_kwargs))
+            else:
+                return func(*args, **new_kwargs)
+
+        def add_param_to_on_next_call(self, kwargs):
+            """ Pass a dict with key: value (as param=value) to pass during _on_next() calling. """
+            self._on_next_opt_kwargs = kwargs
 
     # Code used when we act on object (and not class) level
     # Bound as a real "object method" passing self as first arg

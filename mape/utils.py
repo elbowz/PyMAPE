@@ -80,6 +80,7 @@ class LogObserver(Observer):
         self.postfix = f" | {postfix}" if postfix else ''
 
         if module_name is None:
+            # f.__globals__.get("_LOGGER", _LOGGER)
             self.logger = logging.getLogger(caller_module_name())
         else:
             self.logger = logging.getLogger(module_name)

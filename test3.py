@@ -70,7 +70,8 @@ async def async_main(*args, **kwargs):
 
     logger.debug(f"{'=' * 6} Element ({e_kitchen.uid}) direct call of function {'=' * 6}")
     # Ignore the ops_in (ie. distinct)
-    e_kitchen(True, useful_params='something')
+    # Autodetect coroutine function (decide if you want await or not
+    await e_kitchen(True, useful_params='something')
 
     logger.debug(f"{'=' * 6} Element ({l_kitchen.Monitor.uid}) call of method using item {'=' * 6}")
     # Start and stop to allow receiving CallMethod item

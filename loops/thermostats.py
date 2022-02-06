@@ -64,13 +64,14 @@ def Plan(item, on_next, self):
 
 
 @mape.to_execute_cls(default_uid=UID.RANDOM,
-                     default_ops_in=ops.distinct_until_changed(lambda item: item.value),
+                     default_ops_in=ops.distinct_until_changed(),
                      param_self=True)
-def Execute(item, on_next, self, useful_params=None):
-    if useful_params:
-        logger.debug(f"I'm {self.uid}, called with useful_params='{useful_params}'")
+async def Execute(item, on_next, self, useful_params=None):
+    logger.debug(f"I'm {self.uid}, called with useful_params='{useful_params}'")
     # self.managed_element_room.set_heater(item.value)
     self.managed_element_room.set_heater(item)
+
+    return item
 
 
 def make(name: str, target_temp: float, room) -> Loop:
