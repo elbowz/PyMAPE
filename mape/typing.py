@@ -23,6 +23,11 @@ class Item:
     hops: int = 0
     timestamp: float = field(default_factory=lambda: datetime.timestamp(datetime.now()))
 
+    def add_hop(self, hop):
+        # save history of hops?!
+        # hop.path()
+        self.hops += 1
+
 
 @dataclass
 class Message(Item):

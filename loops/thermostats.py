@@ -34,7 +34,8 @@ class Monitor(mape.base_elements.Monitor):
     async def _read_loop(self, interval=6):
         """ Simulate callback """
         while True and self.is_running:
-            item = Message(value=self.managed_element_room.current_temperature, src=self.path)
+            # item = Message(value=self.managed_element_room.current_temperature, src=self.path)
+            item = self.managed_element_room.current_temperature
             self._on_next(item)
             await asyncio.sleep(random.randint(1, 10))
 
@@ -57,7 +58,8 @@ class Monitor(mape.base_elements.Monitor):
 
 @mape.to_plan_cls(default_ops_in=ops.debounce(5.0), param_self=True)
 def Plan(item, on_next, self):
-    item.value = True if item.value < self.target_temp else False
+    # item.value = True if item.value < self.target_temp else False
+    item = True if item < self.target_temp else False
     on_next(item)
 
 
@@ -67,7 +69,8 @@ def Plan(item, on_next, self):
 def Execute(item, on_next, self, useful_params=None):
     if useful_params:
         logger.debug(f"I'm {self.uid}, called with useful_params='{useful_params}'")
-    self.managed_element_room.set_heater(item.value)
+    # self.managed_element_room.set_heater(item.value)
+    self.managed_element_room.set_heater(item)
 
 
 def make(name: str, target_temp: float, room) -> Loop:

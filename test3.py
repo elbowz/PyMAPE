@@ -47,11 +47,11 @@ async def async_main(*args, **kwargs):
     logger.debug(f"access by dot notation app.th_kitchen.Monitor: {uid}")
 
     logger.debug(f"{'=' * 6} Debounce test on Plan plan4thermostat {'=' * 6}")
-    p.port_in.on_next(Message(value=22))
-    mape.app.th_kitchen.plan4th_kitchen.port_in.on_next(Message(value=21))
+    p.port_in.on_next(22)
+    mape.app.th_kitchen.plan4th_kitchen.port_in.on_next(21)
     # default on_next() is on port_in
-    l_kitchen.plan4th_kitchen.on_next(Message(value=20))
-    l_kitchen.plan4th_kitchen.on_next(Message(value=23))
+    l_kitchen.plan4th_kitchen.on_next(20)
+    l_kitchen.plan4th_kitchen.on_next(23)
 
     logger.debug('Sleeping for 6 seconds...')
     await asyncio.sleep(6)
@@ -60,17 +60,17 @@ async def async_main(*args, **kwargs):
     # Retrive execute element from kitchen loop by type, because uid is random
     e_kitchen = [element for element in l_kitchen if isinstance(element, mape.base_elements.Execute)][0]
 
-    e_kitchen.on_next(Message(value=True))
-    e_kitchen.on_next(Message(value=True))
-    e_kitchen.on_next(Message(value=True))
-    e_kitchen.on_next(Message(value=True))
+    e_kitchen.on_next(True)
+    e_kitchen.on_next(True)
+    e_kitchen.on_next(True)
+    e_kitchen.on_next(True)
 
     logger.debug('Sleeping for 1 second...')
     await asyncio.sleep(1)
 
     logger.debug(f"{'=' * 6} Element ({e_kitchen.uid}) direct call of function {'=' * 6}")
     # Ignore the ops_in (ie. distinct)
-    e_kitchen(Message(value=True), useful_params='something')
+    e_kitchen(True, useful_params='something')
 
     logger.debug(f"{'=' * 6} Element ({l_kitchen.Monitor.uid}) call of method using item {'=' * 6}")
     # Start and stop to allow receiving CallMethod item

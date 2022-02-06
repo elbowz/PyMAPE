@@ -22,6 +22,8 @@
 * Remove param_self (form decorator), and insert automatically when self is in func signature
 * Auto import and instance loop from files/modules in ./loops (package)
 * Message not mandatory in the element (add filter not CallMethod and map on hops if Message)
+* Gateway, maybe better call it Router
+* Create a test (inspiraton: https://github.com/plataux/purse/blob/master/src/purse/collections.py)
 * Add Redis
   * share loops/elements 
   * as shared memory

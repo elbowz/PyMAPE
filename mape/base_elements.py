@@ -228,8 +228,8 @@ class Element(Observable, Observer, typing.Subject):
         if not self.is_running:
             # TODO: debug can be pre-pend here as ops.do_action() instead of subscribe ?!
             self._p_in.pipe = self._p_in.input.pipe(
-                ops.filter(lambda item: isinstance(item, Message)),
-                # TODO: increment HOPS
+                ops.filter(lambda item: not isinstance(item, CallMethod)),
+                ops.do_action(lambda item: isinstance(item, Message) and item.add_hop(self)),
                 *self._p_in.operators
             )
 
