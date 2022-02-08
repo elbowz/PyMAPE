@@ -67,6 +67,16 @@ def init(debug=False, asyncio_loop=None):
     # Catch stop execution (ie. ctrl+c or brutal stop)
     for signame in ('SIGINT', 'SIGTERM'):
         loop.add_signal_handler(getattr(signal, signame), loop.stop)
+        # Let's also cancel all running tasks:
+        # pending = asyncio.Task.all_tasks()
+        # asyncio.all_tasks(loop=None)
+        # for task in pending:
+        #     task.cancel()
+        #     # Now we should await task to execute it's cancellation.
+        #     # Cancelled task raises asyncio.CancelledError that we can suppress:
+        #     with suppress(asyncio.CancelledError):
+        #         loop.run_until_complete(task)
+    # loop.set_exception_handler(lambda a, b: print(a, b))
 
     set_debug(debug)
 

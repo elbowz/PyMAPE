@@ -12,6 +12,7 @@ from mape import operators as mape_ops
 from mape.base_elements import UID
 from mape.typing import Message, CallMethod
 from mape.utils import LogObserver, init_logger
+from typing import Type, Any, List, Tuple, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple
 
 # Take the same mape package logger setup (eg. handler and format)
 logger = init_logger(__name__)
@@ -133,7 +134,7 @@ class AnalyzeAVG(mape.base_elements.Analyze):
         items_sum = reduce(lambda acc, item: acc + item.value, items, 0)
 
         # Keep src and timestamp from first Message in items
-        return Message(value=(items_sum/len(items)), src=items[0].src, timestamp=items[0].timestamp)
+        return Message(value=(items_sum / len(items)), src=items[0].src, timestamp=items[0].timestamp)
 
 
 # Same name (heater_execute) used in heater_a...allowed like following var (re)assignement
@@ -292,6 +293,64 @@ async def async_main(*args, **kwargs):
     my_func_register.on_next(Message(value=2))
     help(heater_execute_test.__call__)
 
+async def async_remote(*args, **kwargs):
+    from mape.remote import RedisPublishObserver, RedisSubscribeObservable
+    from mape.utils import LogObserver
+    from mape.typing import Message
+
+    # async def ciao(par):
+    #     print(X)
+    #     await asyncio.sleep(10)
+    #
+    # asyncio.create_task(ciao('ciao'))
+    # print("called")
+    # await asyncio.sleep(6)
+    # print("sleep", 6)
+    # await asyncio.sleep(6)
+    # print("sleep", 12)
+    # return
+
+    from dataclasses import dataclass, field
+
+    @dataclass
+    class PayloadTest:
+        name: str = 'ciao'
+        number: int = 6
+        numbers: List = field(default_factory=lambda: [1, 2, 3])
+
+    # import pickle
+    # pickle.dumps(Message(value=PayloadTest(), src='src.B'))
+
+    ciao = RedisSubscribeObservable(["A", "B"])
+    a = ciao.subscribe(LogObserver("A"))
+
+    ciao = RedisSubscribeObservable("B")
+    b = ciao.subscribe(LogObserver("B"))
+
+    pub_observer = RedisPublishObserver("A")
+
+    pub_observer.on_next(Message(value=2, src='src.A'))
+    pub_observer.on_next(2)
+    # pub_observer.on_error(Message(value="error", src='src2'))
+    # pub_observer.on_completed()
+
+    await asyncio.sleep(4)
+    # pub_observer.dispose()
+
+    print("dajee")
+
+    pub_observer = RedisPublishObserver("B")
+
+    pub_observer.on_next(Message(value=PayloadTest(), src='src.B'))
+    pub_observer.on_next(20)
+    # pub_observer.on_error(Message(value="error", src='src20'))
+    # pub_observer.on_completed()
+
+    await asyncio.sleep(4)
+
+    a.dispose()
+    b.dispose()
+
 
 if __name__ == '__main__':
     print('Main [start]')
@@ -315,6 +374,7 @@ if __name__ == '__main__':
     # loop.create_task(my_coroutine())
 
     mape.init(True)
-    mape.run(entrypoint=async_main('test'))
+    # mape.run(entrypoint=async_main('test'))
+    mape.run(entrypoint=async_remote())
 
     print('Main [end]')

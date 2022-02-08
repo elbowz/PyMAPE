@@ -26,10 +26,12 @@ async def async_main(*args, **kwargs):
     # Managed elements
     kitchen = VirtualRoom(init_temperature=20, init_air_quality=36, uid='kitchen')
     bedroom = VirtualRoom(init_temperature=14, init_air_quality=42, uid='bedroom')
+    # bathroom = VirtualRoom(init_temperature=24, init_air_quality=36, uid='bathroom')
 
     # Init loops thermostat
     l_kitchen = thermostats.make(f"th_{kitchen.uid}", target_temp=20, room=kitchen)
     l_bedroom = thermostats.make(f"th_{bedroom.uid}", target_temp=16, room=bedroom)
+    # l_bathroom = thermostats.make(f"th_{bathroom.uid}", target_temp=16, room=bathroom)
 
     # List loops init
     logger.debug(f"LOOPS: {list(mape.app.loops.keys())}")
@@ -85,13 +87,16 @@ async def async_main(*args, **kwargs):
     # Start monitor elements
     l_kitchen.Monitor.start()
     l_bedroom.Monitor.start()
+    # l_bathroom.Monitor.start()
 
     # Init loops air quality
     l_kitchen = air_quality.make(f"aq_{kitchen.uid}", room=kitchen)
     l_bedroom = air_quality.make(f"aq_{bedroom.uid}", room=bedroom)
+    # l_bathroom = air_quality.make(f"aq_{bathroom.uid}", room=bathroom)
 
     l_kitchen.Monitor.start()
     l_bedroom.Monitor.start()
+    # l_bathroom.Monitor.start()
 
     # Connect all Monitor in air quality loop to alarm loop (AVG)
     alarm.make()
