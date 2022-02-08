@@ -77,7 +77,7 @@ class HeaterMonitor(mape.base_elements.Monitor):
         disposable = super().start(scheduler=scheduler)
 
         # TODO: create a on_start() and wrap with asyncio.lock?!
-        aioloop = mape.loop or asyncio.get_event_loop()
+        aioloop = mape.aio_loop or asyncio.get_event_loop()
         task = aioloop.create_task(self._read_loop(interval=6))
 
         return disposable
@@ -151,7 +151,7 @@ start_time = asyncio.get_event_loop().time()
 
 @master.analyze(uid='master_analyze', param_self=True)
 def master_a(item, on_next, self):
-    aioloop = mape.loop or asyncio.get_event_loop()
+    aioloop = mape.aio_loop or asyncio.get_event_loop()
 
     current_time = aioloop.time()
     if start_time + 10 <= current_time <= start_time + 20:
@@ -223,8 +223,8 @@ async def async_main(*args, **kwargs):
     # ).subscribe()
 
     # ... or
-    monitor.subscribe(plan, scheduler=mape.scheduler)
-    plan.subscribe(heater_a.heater_execute, scheduler=mape.scheduler)
+    monitor.subscribe(plan, scheduler=mape.rx_scheduler)
+    plan.subscribe(heater_a.heater_execute, scheduler=mape.rx_scheduler)
 
     logger.info('TEST DEBOUNCE ON PLAN IN')
     plan.port_in.on_next(Message(value=22))
@@ -242,7 +242,7 @@ async def async_main(*args, **kwargs):
     heater_a.heater_execute.on_next(Message(value=True))
     await asyncio.sleep(1)
 
-    monitor.start(scheduler=mape.scheduler)
+    monitor.start(scheduler=mape.rx_scheduler)
 
     logger.info('TEST CALLMETHOD ITEM')
     monitor.on_next(CallMethod(name='test_call_method', args=['args0', 'args1'], kwargs={'kwargs0': 'kwargs0'}))
@@ -251,7 +251,7 @@ async def async_main(*args, **kwargs):
 
     monitor_b.debug(mape.Element.Debug.OUT)
     monitor_b.managed_element_room = managed_element_room_b
-    monitor_b.start(scheduler=mape.scheduler)
+    monitor_b.start(scheduler=mape.rx_scheduler)
 
     analyze_avg = AnalyzeAVG(heater_b, 6)
     analyze_avg.debug(mape.Element.Debug.OUT)
@@ -263,7 +263,7 @@ async def async_main(*args, **kwargs):
         mape_ops.through(analyze_avg),
         mape_ops.map(lambda item: Message(value=item.value < 16)),
         mape_ops.through(heater_b.heater_execute)
-    ).subscribe(scheduler=mape.scheduler)
+    ).subscribe(scheduler=mape.rx_scheduler)
 
     # Direct call (force a read in this case)
     logger.info('TEST FORCE HEATER B READ (direct call to _on_next())')
@@ -293,63 +293,9 @@ async def async_main(*args, **kwargs):
     my_func_register.on_next(Message(value=2))
     help(heater_execute_test.__call__)
 
+
 async def async_remote(*args, **kwargs):
-    from mape.remote import RedisPublishObserver, RedisSubscribeObservable
-    from mape.utils import LogObserver
-    from mape.typing import Message
-
-    # async def ciao(par):
-    #     print(X)
-    #     await asyncio.sleep(10)
-    #
-    # asyncio.create_task(ciao('ciao'))
-    # print("called")
-    # await asyncio.sleep(6)
-    # print("sleep", 6)
-    # await asyncio.sleep(6)
-    # print("sleep", 12)
-    # return
-
-    from dataclasses import dataclass, field
-
-    @dataclass
-    class PayloadTest:
-        name: str = 'ciao'
-        number: int = 6
-        numbers: List = field(default_factory=lambda: [1, 2, 3])
-
-    # import pickle
-    # pickle.dumps(Message(value=PayloadTest(), src='src.B'))
-
-    ciao = RedisSubscribeObservable(["A", "B"])
-    a = ciao.subscribe(LogObserver("A"))
-
-    ciao = RedisSubscribeObservable("B")
-    b = ciao.subscribe(LogObserver("B"))
-
-    pub_observer = RedisPublishObserver("A")
-
-    pub_observer.on_next(Message(value=2, src='src.A'))
-    pub_observer.on_next(2)
-    # pub_observer.on_error(Message(value="error", src='src2'))
-    # pub_observer.on_completed()
-
-    await asyncio.sleep(4)
-    # pub_observer.dispose()
-
-    print("dajee")
-
-    pub_observer = RedisPublishObserver("B")
-
-    pub_observer.on_next(Message(value=PayloadTest(), src='src.B'))
-    pub_observer.on_next(20)
-    # pub_observer.on_error(Message(value="error", src='src20'))
-    # pub_observer.on_completed()
-
-    await asyncio.sleep(4)
-
-    a.dispose()
-    b.dispose()
+    pass
 
 
 if __name__ == '__main__':

@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import aioredis
 import warnings
+from contextlib import suppress
 
 from typing import Any, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple
 from rx.scheduler.eventloop import AsyncIOScheduler
@@ -21,8 +23,9 @@ __version__ = '0.0.1b'
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-loop: Optional[asyncio.AbstractEventLoop] = None
-scheduler: Optional[AsyncIOScheduler] = None
+aio_loop: Optional[asyncio.AbstractEventLoop] = None
+rx_scheduler: Optional[AsyncIOScheduler] = None
+redis: Optional[aioredis.Redis] = None
 
 app = App()
 
@@ -39,8 +42,8 @@ def setup_logger():
     logging.getLogger(__name__).propagate = False
 
 
-def init(debug=False, asyncio_loop=None):
-    global loop, scheduler
+def init(debug=False, asyncio_loop=None, redis_url=None):
+    global aio_loop, rx_scheduler, redis
 
     # loop = asyncio.new_event_loop()
     # asyncio.set_event_loop(loop)
@@ -52,31 +55,37 @@ def init(debug=False, asyncio_loop=None):
     # goes through the same event loop. This way, users can schedule
     # background-tasks that keep running across multiple prompts.
     try:
-        loop = asyncio_loop or asyncio.get_event_loop()
+        aio_loop = asyncio_loop or asyncio.get_event_loop()
     except RuntimeError:
         # Possibly we are not running in the main thread, where no event
         # loop is set by default. Or somebody called `asyncio.run()`
         # before, which closes the existing event loop. We can create a new
         # loop.
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+        aio_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(aio_loop)
 
-    scheduler = scheduler or AsyncIOScheduler(loop)
+    rx_scheduler = rx_scheduler or AsyncIOScheduler(aio_loop)
+
+    def on_stop():
+        aio_loop.stop()
+
+        # Let's also cancel all running tasks:
+        pending = asyncio.Task.all_tasks()
+
+        for task in pending:
+            logger.debug(f"Closing still running task: {task!r}")
+            task.cancel()
+
 
     import signal
     # Catch stop execution (ie. ctrl+c or brutal stop)
     for signame in ('SIGINT', 'SIGTERM'):
-        loop.add_signal_handler(getattr(signal, signame), loop.stop)
-        # Let's also cancel all running tasks:
-        # pending = asyncio.Task.all_tasks()
-        # asyncio.all_tasks(loop=None)
-        # for task in pending:
-        #     task.cancel()
-        #     # Now we should await task to execute it's cancellation.
-        #     # Cancelled task raises asyncio.CancelledError that we can suppress:
-        #     with suppress(asyncio.CancelledError):
-        #         loop.run_until_complete(task)
-    # loop.set_exception_handler(lambda a, b: print(a, b))
+        aio_loop.add_signal_handler(getattr(signal, signame), on_stop)
+
+    # loop.set_exception_handler(lambda *args: print("exception_handler", *args))
+
+    if redis_url:
+        redis = aioredis.from_url(redis_url, db=0)
 
     set_debug(debug)
 
@@ -86,24 +95,24 @@ def run(entrypoint: Union[Callable, Coroutine] = None):
 
     if entrypoint is not None:
         if inspect.iscoroutine(entrypoint):
-            loop.create_task(entrypoint)
+            aio_loop.create_task(entrypoint, name='entrypoint')
         else:
             entrypoint()
 
-    loop.run_forever()
+    aio_loop.run_forever()
 
 
 def set_debug(debug=False, asyncio_slow_callback_duration=0.1):
     log_lvl = logging.DEBUG if debug else logging.WARNING
 
-    loop.set_debug(debug)
+    aio_loop.set_debug(debug)
     logging.getLogger(__name__).setLevel(log_lvl)
     logging.getLogger('asyncio').setLevel(log_lvl)
 
     # Threshold for "slow" tasks.
     # Reduce to smaller value to throw the error and understand the behaviour.
     # The default is 0.1 (100 milliseconds).
-    loop.slow_callback_duration = asyncio_slow_callback_duration
+    aio_loop.slow_callback_duration = asyncio_slow_callback_duration
 
     if debug:
         # Report all mistakes managing asynchronous resources.

@@ -5,6 +5,7 @@ import logging
 import threading
 
 from typing import Any
+import functools
 from dataclasses import dataclass
 
 from .typing import CallMethod
@@ -111,3 +112,35 @@ def generate_uid(collision_set=None, prefix=None):
             break
 
     return uid
+
+
+async def task_exception(awaitable, module_name=None):
+    """
+    Wrap coro() passed to asyncio.crete_task(), allow to catch exception during task execution
+    eg. task = asyncio.create_task(task_exceptions(coro(*args, *kwargs))
+    note: https://bugs.python.org/issue39839
+    :param awaitable: coro() (coroutine object: an object returned by calling a coroutine function)
+    :param module_name: name used for get logger
+    :return: wrapped coro()
+    """
+    module_name = module_name or caller_module_name(5)
+    logger = logging.getLogger(module_name)
+
+    try:
+        return await awaitable
+    except Exception as e:
+        logger.exception(e)
+
+
+def log_task_exception(coro):
+    """
+    Decorator of task_exception(). Use on coro function instead of
+    :param coro: coroutine function
+    :return: wrapped coro()
+    """
+    module_name = caller_module_name()
+
+    @functools.wraps(coro)
+    async def wrapped(*args, **kwargs):
+        return await task_exception(coro(*args, **kwargs), module_name=module_name)
+    return wrapped

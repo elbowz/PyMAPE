@@ -64,7 +64,7 @@ def p_fan(item, on_next, self):
 p_fan.debug(Element.Debug.IN | Element.Debug.OUT)
 p_fan.target_air_quality = 50
 
-loop_master.a_avg.subscribe(p_fan, scheduler=mape.scheduler)
+loop_master.a_avg.subscribe(p_fan, scheduler=mape.rx_scheduler)
 # we could put the ops.gateway() here instead on plan
 # subscribe for start it (it's a plan => StartOnSubscribe)
 p_fan.subscribe()
@@ -110,7 +110,10 @@ def make(name: str, room) -> Loop:
         ops.through(loop_master.a_avg),
         # a_avg is part of master_loop already connect with its plan
         # We not need connect/subscribe to the executor due the use of gateway on plan
-    ).subscribe(scheduler=mape.scheduler)
+    ).subscribe(scheduler=mape.rx_scheduler)
+
+    from mape.redis_remote import PubObserver
+    m.subscribe(PubObserver(f"{m.path}"))
 
     return loop
 

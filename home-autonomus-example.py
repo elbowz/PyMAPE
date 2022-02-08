@@ -21,7 +21,7 @@ from lib import (
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 loop.set_debug(True)
-scheduler = AsyncIOScheduler(loop)
+rx_scheduler = AsyncIOScheduler(loop)
 
 shared_mem = ShareMem()
 
@@ -40,9 +40,9 @@ async def main_a():
     test = mape.BaseMapeElementTODELETE()
 
     test().on_next("before")
-    a = test.subscribe(LogObserver("A"), scheduler=scheduler)
-    b = test.subscribe(LogObserver("B"), scheduler=scheduler)
-    c = test.subscribe(LogObserver("C"), scheduler=scheduler)
+    a = test.subscribe(LogObserver("A"), scheduler=rx_scheduler)
+    b = test.subscribe(LogObserver("B"), scheduler=rx_scheduler)
+    c = test.subscribe(LogObserver("C"), scheduler=rx_scheduler)
     test().on_next("ciao")
 
     await asyncio.sleep(1)
@@ -60,7 +60,7 @@ async def main_a():
 
     test().on_next("ciao5")
 
-    d = test.subscribe(LogObserver("D"), scheduler=scheduler)
+    d = test.subscribe(LogObserver("D"), scheduler=rx_scheduler)
     test.start()
 
     test().on_next("ciao6")
@@ -91,7 +91,7 @@ async def heaters_controller():
     temp_share.pipe(
         ops.window_with_count(count=4),
         ops.flat_map(lambda obs: obs.to(ops.average()))
-    ).subscribe(lambda item: log(f"CONTROLLER: Temp average of all room {item:.2f} (each 4 read)"), scheduler=scheduler)
+    ).subscribe(lambda item: log(f"CONTROLLER: Temp average of all room {item:.2f} (each 4 read)"), scheduler=rx_scheduler)
 
     await asyncio.sleep(16)
 
@@ -157,7 +157,7 @@ async def heater_a_mape_loop():
         # Switch on/off heater
         ops.do_action(lambda item: virtual_room.set_heater(item)),
         ops.do_action(lambda item: log(f"HEATER A: {item} (state)")),
-    ).subscribe(scheduler=scheduler)
+    ).subscribe(scheduler=rx_scheduler)
 
     # await asyncio.sleep(5)
     #
@@ -178,17 +178,17 @@ async def heater_b_mape_loop():
 
     a = monitor_heater.pipe(
         # Glue code (ie reactiveX operators)
-    ).subscribe(analyze_avg, scheduler=scheduler)
+    ).subscribe(analyze_avg, scheduler=rx_scheduler)
 
     b = analyze_avg.pipe(
         # Glue code (ie reactiveX operators)
         ops.do_action(lambda item: log(f"HEATER B: {item:.2f} (average temp)"))
-    ).subscribe(plan_prop_power, scheduler=scheduler)
+    ).subscribe(plan_prop_power, scheduler=rx_scheduler)
 
     c = plan_prop_power.pipe(
         # Glue code (ie reactiveX operators)
         ops.do_action(lambda item: log(f"HEATER B: {item:.2f} (proportional power)"))
-    ).subscribe(scheduler=scheduler)
+    ).subscribe(scheduler=rx_scheduler)
 
     # await asyncio.sleep(30)
     #

@@ -14,8 +14,9 @@ from rx.disposable import Disposable, CompositeDisposable
 from rx import operators as ops
 from dataclasses import dataclass, field
 
+import mape
 from .typing import Message, CallMethod, MapeLoop, OpsChain
-from .utils import init_logger, LogObserver, GenericObject, caller_module_name
+from .utils import init_logger, LogObserver, GenericObject, caller_module_name, task_exception
 
 logger = logging.getLogger(__name__)
 
@@ -158,7 +159,7 @@ class Element(Observable, Observer, typing.Subject):
         self._uid = uid if not hasattr(uid, 'value') else uid.value
 
         self._loop = loop
-        self._aioloop = asyncio.get_event_loop()
+        self._aio_loop = mape.aio_loop or asyncio.get_event_loop()
         self.is_running = False
         self._debug = GenericObject()
 
@@ -190,14 +191,14 @@ class Element(Observable, Observer, typing.Subject):
 
         if Element.Debug.IN in lvl:
             self._debug.in_dispose = self._p_in.input.subscribe(
-                LogObserver(f"in > [{self._loop.uid}/{self.uid}]", module_name)
+                LogObserver(f"in > [{self._loop.uid}.{self.uid}]", module_name)
             )
         elif hasattr(self._debug, 'in_dispose'):
             self._debug.in_dispose.dispose()
 
         if Element.Debug.OUT in lvl:
             self._debug.out_dispose = self._p_out.output.subscribe(
-                LogObserver(f"[{self._loop.uid}/{self.uid}] > out", module_name)
+                LogObserver(f"[{self._loop.uid}.{self.uid}] > out", module_name)
             )
         elif hasattr(self._debug, 'out_dispose'):
             self._debug.out_dispose.dispose()
@@ -450,7 +451,9 @@ def make_func_class(func: Callable | Coroutine,
             new_kwargs = {**self._on_next_opt_kwargs, **kwargs}
 
             if inspect.iscoroutinefunction(func):
-                return self._aioloop.create_task(func(*args, **new_kwargs))
+                # The func execution is put in a task (ie parallel/background)
+                coro = task_exception(func(*args, **new_kwargs))
+                return self._aio_loop.create_task(coro)
             else:
                 return func(*args, **new_kwargs)
 

@@ -63,6 +63,8 @@ async def async_main(*args, **kwargs):
     e_kitchen = [element for element in l_kitchen if isinstance(element, mape.base_elements.Execute)][0]
 
     e_kitchen.on_next(True)
+    # Allow the e_kitchen func (coro in a task) to execute
+    await asyncio.sleep(0)
     e_kitchen.on_next(True)
     e_kitchen.on_next(True)
     e_kitchen.on_next(True)
@@ -125,7 +127,7 @@ if __name__ == '__main__':
     #
     # loop.create_task(my_coroutine())
 
-    mape.init(debug=True)
+    mape.init(debug=True, redis_url='redis://localhost:6379')
     mape.run(entrypoint=async_main('test'))
 
     logger.debug('...STOP')

@@ -11,44 +11,42 @@ from rx import operators as ops
 from dataclasses import dataclass, field
 from typing import Type, Any, List, Tuple, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple
 
+import mape
 from .base_elements import Port
+from .utils import log_task_exception
 
 
-def _serializer(item):
-    print(item)
-    # try:
-    return pickle.dumps(item, pickle.HIGHEST_PROTOCOL)
-    # except Exception as e:
-    #     print("no no", e)
-    # return json.dumps(item, default=lambda obj: obj.__dict__)
+def _serializer(obj):
+    return pickle.dumps(obj, pickle.HIGHEST_PROTOCOL)
 
+
+def _deserializer(raw):
+    return pickle.loads(raw)
 
 # TODO:
 #  * add deserializer
 #  * remove port from RedisPublishObserver?!
 
 
-_redis = aioredis.from_url("redis://localhost")
-
-
-class RedisPublishObserver(Observer):
+class PubObserver(Observer):
 
     def __init__(self, channel, redis=None) -> None:
         self._channel = channel
         self._queue = asyncio.Queue()
-        self._redis = redis or _redis or aioredis.from_url("redis://localhost")
+        self._redis = redis or mape.redis
 
         self._p_in = Port(input=Subject(), operators=[ops.materialize()])
         self._p_in.pipe = self._p_in.input.pipe(*self._p_in.operators)
         self._p_in.disposable = self._p_in.pipe.subscribe(on_next=lambda item: self._publish(item))
 
-        asyncio.create_task(self._publish_queue())
+        self._task = asyncio.create_task(self._publish_queue())
 
         super().__init__(self._p_in.input.on_next, self._p_in.input.on_error, self._p_in.input.on_completed)
 
     def _publish(self, item):
         self._queue.put_nowait(item)
 
+    @log_task_exception
     async def _publish_queue(self):
         while True:
             item = await self._queue.get()
@@ -62,20 +60,19 @@ class RedisPublishObserver(Observer):
         self.dispose()
 
 
-class RedisSubscribeObservable(Observable):
+class SubObservable(Observable):
     def __init__(self, channels_patterns, redis=None) -> None:
-        self._redis = redis or _redis or aioredis.from_url("redis://localhost")
+        self._redis = redis or mape.redis
         self._pubsub = None
         self._channels_pattern = channels_patterns if isinstance(channels_patterns, List) else [channels_patterns]
         self._disposable = CompositeDisposable()
 
         def on_subscribe(observer, scheduler):
-            print("subscribe")
-
             def _on_publish(message):
-                item = pickle.loads(message['data'])
+                item = _deserializer(message['data'])
                 observer.on_next(item)
 
+            @log_task_exception
             async def init_redis_sub():
                 self._pubsub = self._redis.pubsub()
 

@@ -8,6 +8,7 @@ from typing import Optional
 import mape
 from mape import Loop, operators as ops, MapeLoop, OpsChain
 from mape.base_elements import UID, Element
+from mape.utils import log_task_exception
 from mape.typing import Message
 
 from .fixitures import VirtualRoom
@@ -31,6 +32,7 @@ class Monitor(mape.base_elements.Monitor):
         self.managed_element_room = room
         super().__init__(loop, uid, ops_in, ops_out)
 
+    @log_task_exception
     async def _read_loop(self, interval=6):
         """ Simulate callback """
         while True and self.is_running:
@@ -43,7 +45,7 @@ class Monitor(mape.base_elements.Monitor):
         disposable = super().start(scheduler=scheduler)
 
         # TODO: create a on_start() and wrap with asyncio.lock?!
-        aioloop = mape.loop or asyncio.get_event_loop()
+        aioloop = mape.aio_loop or asyncio.get_event_loop()
         self.task = aioloop.create_task(self._read_loop(interval=6))
 
         return disposable
@@ -96,8 +98,8 @@ def make(name: str, target_temp: float, room) -> Loop:
     #     mape_ops.through(e)
     # ).subscribe()
     # ... or
-    m.subscribe(p, scheduler=mape.scheduler)
-    p.subscribe(e, scheduler=mape.scheduler)
+    m.subscribe(p, scheduler=mape.rx_scheduler)
+    p.subscribe(e, scheduler=mape.rx_scheduler)
 
     return loop
 
