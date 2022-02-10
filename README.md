@@ -2,11 +2,11 @@
 * MapeElement dependency start
   * Start order based on subscribers.
     Visita grafo in profondità e start() dalle foglie
-* MapeElement debug IN e OUT  (https://github.com/ReactiveX/RxPY/issues/497)
+* MapeElement debug IN e OUT (https://github.com/ReactiveX/RxPY/issues/497)
   Valuta se meglio metterlo (per dare un ordine migliore nel log?!) nel port_in e port_out, facendo start e stop, o fisso (ie do_action()) inibendo la print
 * ~~Test _add_func() with a CustomElement user Class~~
 * ~~mape.get('loop/element') or mape.get('loop')~~
-* Run a docker container directly form the python code (eg. sub/client/minor-loop autostart)?!
+* Run a docker container directly from the python code (eg. sub/client/minor-loop autostart)?!
 * MapeLoop/Application auto-link/subscribe MapeElement following order (maybe pattern):
   * MANUAL: DIY
   * REGISTER: Follow loop registering order
@@ -24,12 +24,18 @@
 ~~* Message not mandatory in the element (add filter not CallMethod and map on hops if Message)~~
 * Gateway, maybe better call it Router
 * Create a test (inspiraton: https://github.com/plataux/purse/blob/master/src/purse/collections.py)
+* ~~Create Message and CallMethod factory method. Create used in Monitor. eg Message.create(value, element, dst=None)...where form element extract the src path~~
 * Add Redis
-  * share loops/elements 
-  * as shared memory
+  * share/sync loops/elements 
+  * as shared memory (https://github.com/plataux/purse)
   ~~* pub/sub or stream for distributed communication~~
-  * asyncio event shared?
+  * asyncio event shared?!
+  * decorator for event publish/subscribe (namespaced in loop.uid or global)
   * https://stackoverflow.com/questions/28785383/how-to-disable-persistence-with-redis
+  * embed redis in python (https://pypi.org/project/redislite/, https://github.com/chekart/rediserver/blob/master/rediserver/test/embedded.py)
+* Add REST, gRPC as SubObservable, PubObserver
+* Implementare esempio per il coordinated e per l'information sharing (magari entrambi in due modi diverse: CallMethod / link the port-out of Element with a filter)
+* Add __slots__ to class where can be useful (App, Loop, Element) (https://stackoverflow.com/questions/472000/usage-of-slots)
 
 ## CLI
 * `sudo docker run --name mape-redis -p 6379:6379 --rm redis`

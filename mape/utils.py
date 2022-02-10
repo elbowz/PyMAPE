@@ -4,11 +4,8 @@ import inspect
 import logging
 import threading
 
-from typing import Any
 import functools
 from dataclasses import dataclass
-
-from .typing import CallMethod
 
 _datefmt = '%H:%M:%S'
 # _datefmt='%d %H:%M:%S'

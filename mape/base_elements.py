@@ -9,13 +9,13 @@ from functools import partial, wraps
 
 import rx
 from rx.subject import Subject
-from rx.core import Observer, Observable, ConnectableObservable, typing
+from rx.core import Observer, Observable, ConnectableObservable, typing as rx_typing
 from rx.disposable import Disposable, CompositeDisposable
 from rx import operators as ops
 from dataclasses import dataclass, field
 
 import mape
-from .typing import Message, CallMethod, MapeLoop, OpsChain
+from mape import typing
 from .utils import init_logger, LogObserver, GenericObject, caller_module_name, task_exception
 
 logger = logging.getLogger(__name__)
@@ -132,7 +132,7 @@ class Port:
 #  * single pipe from p_in to p_out and in the middle ops.through (ie on_next, on_error...)
 #  * use a ConnectableObservable instead and exploit the .connect(), implementing .disconnect() ?!
 #    inspiration: https://github.com/ReactiveX/RxPY/blob/release/v1.6.x/rx/backpressure/pausable.py
-class Element(Observable, Observer, typing.Subject):
+class Element(Observable, Observer, rx_typing.Subject):
     # TODO: pass as argument to _process_msg, instead of only move_on
     # evaluate if is it necessary:
     #  * is raise exception inside _process_msg the same that pass error
@@ -150,10 +150,10 @@ class Element(Observable, Observer, typing.Subject):
         OUT = 4
 
     def __init__(self,
-                 loop: MapeLoop,
+                 loop: typing.MapeLoop,
                  uid: str | UID = None,
-                 ops_in: Optional[OpsChain] = (),
-                 ops_out: Optional[OpsChain] = ()
+                 ops_in: Optional[typing.OpsChain] = (),
+                 ops_out: Optional[typing.OpsChain] = ()
                  ) -> None:
         uid = uid if uid != UID.DEF else self.__class__.__name__
         self._uid = uid if not hasattr(uid, 'value') else uid.value
@@ -203,10 +203,10 @@ class Element(Observable, Observer, typing.Subject):
         elif hasattr(self._debug, 'out_dispose'):
             self._debug.out_dispose.dispose()
 
-    def subscribe(self, observer: Optional[Union[typing.Observer, typing.OnNext]] = None,
-                  on_error: Optional[typing.OnError] = None, on_completed: Optional[typing.OnCompleted] = None,
-                  on_next: Optional[typing.OnNext] = None, *,
-                  scheduler: Optional[typing.Scheduler] = None, param: Any = None) -> typing.Disposable:
+    def subscribe(self, observer: Optional[Union[rx_typing.Observer, rx_typing.OnNext]] = None,
+                  on_error: Optional[rx_typing.OnError] = None, on_completed: Optional[rx_typing.OnCompleted] = None,
+                  on_next: Optional[rx_typing.OnNext] = None, *,
+                  scheduler: Optional[rx_typing.Scheduler] = None, param: Any = None) -> rx_typing.Disposable:
 
         # print(self.uid, observer, param)
 
@@ -229,8 +229,8 @@ class Element(Observable, Observer, typing.Subject):
         if not self.is_running:
             # TODO: debug can be pre-pend here as ops.do_action() instead of subscribe ?!
             self._p_in.pipe = self._p_in.input.pipe(
-                ops.filter(lambda item: not isinstance(item, CallMethod)),
-                ops.do_action(lambda item: isinstance(item, Message) and item.add_hop(self)),
+                ops.filter(lambda item: not isinstance(item, typing.CallMethod)),
+                ops.do_action(lambda item: isinstance(item, typing.Message) and item.add_hop(self)),
                 *self._p_in.operators
             )
 
@@ -245,7 +245,7 @@ class Element(Observable, Observer, typing.Subject):
             # TODO: implement the logic of do_action (ie. real call).
             # Maybe can be un external utility where pass self
             sub_method_call = self._p_in.input.pipe(
-                ops.filter(lambda item: isinstance(item, CallMethod)),
+                ops.filter(lambda item: isinstance(item, typing.CallMethod)),
                 ops.do_action(lambda item: item.exec(self))
             ).subscribe(scheduler=scheduler)
 
@@ -297,7 +297,7 @@ class Element(Observable, Observer, typing.Subject):
         return self._uid
 
     @property
-    def loop(self) -> MapeLoop:
+    def loop(self) -> typing.MapeLoop:
         return self._loop
 
     @property
@@ -383,8 +383,8 @@ def to_element_cls(
         *,
         element_class=...,
         default_uid: str | UID = ...,
-        default_ops_in: Optional[OpsChain] = ...,
-        default_ops_out: Optional[OpsChain] = ...,
+        default_ops_in: Optional[typing.OpsChain] = ...,
+        default_ops_out: Optional[typing.OpsChain] = ...,
         param_self: bool = ...
 ) -> Type[Element]: ...
 
@@ -395,8 +395,8 @@ def to_element_cls(
 def to_element_cls(func=None, /, *,
                    element_class=Element,
                    default_uid: str | UID = UID.DEF,
-                   default_ops_in: Optional[OpsChain] = (),
-                   default_ops_out: Optional[OpsChain] = (),
+                   default_ops_in: Optional[typing.OpsChain] = (),
+                   default_ops_out: Optional[typing.OpsChain] = (),
                    param_self: bool = False) -> Type[Element] | Callable[..., Type[Element]]:
     """ Create the decorator and manage the call w/wo parentheses (ie @decorator vs @decorator()) """
     if func is None:
@@ -418,8 +418,8 @@ def to_element_cls(func=None, /, *,
 def make_func_class(func: Callable | Coroutine,
                     element_class: Type[Element],
                     default_uid: str | UID = UID.DEF,
-                    default_ops_in: Optional[OpsChain] = (),
-                    default_ops_out: Optional[OpsChain] = (),
+                    default_ops_in: Optional[typing.OpsChain] = (),
+                    default_ops_out: Optional[typing.OpsChain] = (),
                     param_self: bool = False
                     ) -> Type[Element]:
 
@@ -433,10 +433,10 @@ def make_func_class(func: Callable | Coroutine,
 
     class ElementFunc(element_class):
         def __init__(self,
-                     loop: MapeLoop,
+                     loop: typing.MapeLoop,
                      uid: str | UID = default_uid,
-                     ops_in: Optional[OpsChain] = default_ops_in,
-                     ops_out: Optional[OpsChain] = default_ops_out
+                     ops_in: Optional[typing.OpsChain] = default_ops_in,
+                     ops_out: Optional[typing.OpsChain] = default_ops_out
                      ) -> None:
             super().__init__(loop, uid, ops_in, ops_out)
 
@@ -445,6 +445,9 @@ def make_func_class(func: Callable | Coroutine,
 
             if param_self:
                 self._on_next_opt_kwargs = {'self': self}
+
+            # TODO: alternative _on_next definition to test
+            # self.__class__._on_next = func
 
         @wraps(func)
         def _on_next(self, *args, **kwargs) -> Any | Awaitable:

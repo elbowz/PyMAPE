@@ -6,10 +6,10 @@ import random
 from typing import Optional
 
 import mape
-from mape import Loop, operators as ops, MapeLoop, OpsChain
+from mape import Loop, operators as ops
 from mape.base_elements import UID, Element
 from mape.utils import log_task_exception
-from mape.typing import Message
+from mape.typing import Message, MapeLoop, OpsChain
 
 from .fixitures import VirtualRoom
 

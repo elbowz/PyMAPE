@@ -7,6 +7,8 @@ from typing import Type, Any, List, Tuple, Callable, Optional, Union, Awaitable,
 
 from rx.core.typing import Observer
 
+from mape import base_elements
+
 T1 = TypeVar('T1')
 T2 = TypeVar('T2')
 
@@ -23,6 +25,10 @@ class Item:
     hops: int = 0
     timestamp: float = field(default_factory=lambda: datetime.timestamp(datetime.now()))
 
+    @staticmethod
+    def _element2path(element: Optional[base_elements.Element | str]):
+        return element.path if hasattr(element, 'path') else element
+
     def add_hop(self, hop):
         # save history of hops?!
         # hop.path()
@@ -32,6 +38,12 @@ class Item:
 @dataclass
 class Message(Item):
     value: Any = None
+
+    @classmethod
+    def create(cls, value, *,
+               src: Optional[base_elements.Element | str] = None,
+               dst: Optional[base_elements.Element | str] = None):
+        return cls(value=value, src=cls._element2path(src), dst=cls._element2path(dst))
 
     def __repr__(self):
         formatted_time = datetime.fromtimestamp(self.timestamp).strftime('%H:%M:%S.%f')[:-3]
@@ -44,6 +56,12 @@ class CallMethod(Item):
     args: list = None
     kwargs: dict = None
 
+    @classmethod
+    def create(cls, name, *, args=None, kwargs=None,
+               src: Optional[base_elements.Element | str] = None,
+               dst: Optional[base_elements.Element | str] = None):
+        return cls(name=name, args=args, kwargs=kwargs, src=cls._element2path(src), dst=cls._element2path(dst))
+
     def exec(self, obj_or_module):
         return getattr(obj_or_module, self.name)(*self.args, **self.kwargs)
 
@@ -52,7 +70,6 @@ class CallMethod(Item):
 
 
 class MapeLoop(ABC):
-
     __slots__ = ()
     prefix: str = None
 

@@ -8,9 +8,9 @@ from typing import Optional, Any, Callable
 from functools import reduce
 
 import mape
-from mape import Loop, operators as ops, MapeLoop, OpsChain
+from mape import Loop, operators as ops
 from mape.base_elements import UID, Element
-from mape.typing import Message
+from mape.typing import Message, MapeLoop, OpsChain
 
 from .fixitures import VirtualRoom
 

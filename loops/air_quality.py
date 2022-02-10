@@ -8,9 +8,9 @@ from typing import Optional, Any, Callable
 from functools import reduce
 
 import mape
-from mape import Loop, operators as ops, MapeLoop, OpsChain
+from mape import Loop, operators as ops
 from mape.base_elements import UID, Element
-from mape.typing import Message
+from mape.typing import Message, MapeLoop, OpsChain
 
 from .fixitures import VirtualRoom
 from .alarm import AnalyzeAVG
@@ -78,7 +78,8 @@ def Monitor(item, on_next, self, something_useful=None):
     air_quality = self.managed_element_room.current_air_quality
     # 'dst=' not used in dest_mapper
     # 'dst=' assume the existence of an element with uid 'execute_air_quality'
-    on_next(Message(value=air_quality, src=self.path, dst=self.loop.execute_air_quality.path))
+    msg = Message.create(air_quality, src=self, dst=self.loop.execute_air_quality)
+    on_next(msg)
 
 
 @mape.to_execute_cls(default_uid='execute_air_quality',

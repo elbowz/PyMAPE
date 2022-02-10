@@ -80,7 +80,7 @@ async def async_main(*args, **kwargs):
     logger.debug(f"{'=' * 6} Element ({l_kitchen.Monitor.uid}) call of method using item {'=' * 6}")
     # Start and stop to allow receiving CallMethod item
     l_kitchen.Monitor.start()
-    l_kitchen.Monitor.on_next(CallMethod(name='test_call_method', args=['A', 'B'], kwargs={'kwargs0': 'C'}))
+    l_kitchen.Monitor.on_next(CallMethod.create('test_call_method', args=['A', 'B'], kwargs={'kwargs0': 'C'}))
     l_kitchen.Monitor.stop()
 
     logger.debug('Sleeping for 1 second...')
