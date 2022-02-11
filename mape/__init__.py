@@ -26,8 +26,7 @@ logger.addHandler(logging.NullHandler())
 aio_loop: Optional[asyncio.AbstractEventLoop] = None
 rx_scheduler: Optional[AsyncIOScheduler] = None
 redis: Optional[aioredis.Redis] = None
-
-app = App()
+app: Optional[App] = None
 
 
 def setup_logger():
@@ -43,7 +42,7 @@ def setup_logger():
 
 
 def init(debug=False, asyncio_loop=None, redis_url=None):
-    global aio_loop, rx_scheduler, redis
+    global aio_loop, rx_scheduler, redis, app
 
     # loop = asyncio.new_event_loop()
     # asyncio.set_event_loop(loop)
@@ -86,6 +85,8 @@ def init(debug=False, asyncio_loop=None, redis_url=None):
 
     if redis_url:
         redis = aioredis.from_url(redis_url, db=0)
+
+    app = App(redis)
 
     set_debug(debug)
 

@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 
 import mape
 from mape import typing
-from .utils import init_logger, LogObserver, GenericObject, caller_module_name, task_exception
+from .utils import init_logger, LogObserver, GenericObject, caller_module_name, task_exception, aio_call
 
 logger = logging.getLogger(__name__)
 
@@ -158,7 +158,7 @@ class Element(Observable, Observer, rx_typing.Subject):
         uid = uid if uid != UID.DEF else self.__class__.__name__
         self._uid = uid if not hasattr(uid, 'value') else uid.value
 
-        self._loop = loop
+        self._loop: mape.Loop = loop
         self._aio_loop = mape.aio_loop or asyncio.get_event_loop()
         self.is_running = False
         self._debug = GenericObject()
@@ -181,7 +181,14 @@ class Element(Observable, Observer, rx_typing.Subject):
         Observable.__init__(self)
         Observer.__init__(self, self._p_in.input.on_next, self._p_in.input.on_error, self._p_in.input.on_completed)
 
-    def add_to_loop(self, loop: MapeLoop):
+    async def _aio_init(self):
+        """ Stuff to init with await """
+        pass
+
+    def __await__(self):
+        return self._aio_init().__await__()
+
+    def add_to_loop(self, loop: mape.Loop):
         return loop.add_element(self)
 
     move_to_loop = add_to_loop
@@ -297,7 +304,7 @@ class Element(Observable, Observer, rx_typing.Subject):
         return self._uid
 
     @property
-    def loop(self) -> typing.MapeLoop:
+    def loop(self) -> mape.Loop:
         return self._loop
 
     @property
@@ -433,7 +440,7 @@ def make_func_class(func: Callable | Coroutine,
 
     class ElementFunc(element_class):
         def __init__(self,
-                     loop: typing.MapeLoop,
+                     loop: mape.Loop,
                      uid: str | UID = default_uid,
                      ops_in: Optional[typing.OpsChain] = default_ops_in,
                      ops_out: Optional[typing.OpsChain] = default_ops_out

@@ -9,9 +9,10 @@ import types
 
 import mape
 
-from .base_elements import Element, Monitor, Analyze, Plan, Execute, UID, to_element_cls, make_func_class
-from .utils import generate_uid
-from .typing import MapeLoop, OpsChain
+from mape.base_elements import Element, Monitor, Analyze, Plan, Execute, UID, to_element_cls, make_func_class
+from mape.level import Level
+from mape.utils import generate_uid
+from mape.typing import MapeLoop, OpsChain
 
 logger = logging.getLogger(__name__)
 
@@ -21,21 +22,33 @@ TElement = TypeVar('TElement')
 class Loop(MapeLoop):
     prefix: str = 'l_'
 
-    def __init__(self, uid: str = None, app=None) -> None:
+    def __init__(self, uid: str = None, level: Optional[str] = None, app=None) -> None:
         self._uid = uid
+        self._level = None
         self._elements = dict()
-        self._app = app or mape.app
+        self._app: mape.application.App = app or mape.app
 
         # Add Loop to App
-        self._uid = self.add_to_app(app)
+        self._uid = self.add_to_app(self._app)
 
         if not self._uid:
             raise ValueError(f"'{uid}' already taken, or name is protected")
 
+        if level:
+            self._level = self._app.add_default_level(level)
+
+            if not self.add_to_level(self._level):
+                raise ValueError(f"'{uid}' name is protected")
+
     def add_to_app(self, app):
-        return self._app.add_loop(self)
+        return app.add_loop(self)
 
     move_to_app = add_to_app
+
+    def add_to_level(self, level):
+        return level.add_loop(self)
+
+    move_to_level = add_to_app
 
     def add_element(self, element):
         uid = element.uid or generate_uid(self._elements, prefix=element.prefix)

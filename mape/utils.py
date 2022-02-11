@@ -114,8 +114,12 @@ def generate_uid(collision_set=None, prefix=None):
 async def task_exception(awaitable, module_name=None):
     """
     Wrap coro() passed to asyncio.crete_task(), allow to catch exception during task execution
-    eg. task = asyncio.create_task(task_exceptions(coro(*args, *kwargs))
     note: https://bugs.python.org/issue39839
+
+    Examples:
+        >>> task = asyncio.create_task(task_exceptions(coro(*args, *kwargs))
+        ...
+
     :param awaitable: coro() (coroutine object: an object returned by calling a coroutine function)
     :param module_name: name used for get logger
     :return: wrapped coro()
@@ -141,3 +145,19 @@ def log_task_exception(coro):
     async def wrapped(*args, **kwargs):
         return await task_exception(coro(*args, **kwargs), module_name=module_name)
     return wrapped
+
+
+async def aio_call(func):
+    """
+    Call and return value independently func is a coro or classic func.
+    note: of course must be used inside an async func.
+
+    Examples:
+        >>> await auto_call(func(args, kwargs))
+        >>> await auto_call(coro(args, kwargs))
+        ...
+    """
+    if inspect.iscoroutine(func):
+        return await func
+    else:
+        return func

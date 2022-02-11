@@ -8,6 +8,7 @@ from typing import Type, Any, List, Tuple, Callable, Optional, Union, Awaitable,
 from rx.core.typing import Observer
 
 from mape import base_elements
+from mape.utils import aio_call
 
 T1 = TypeVar('T1')
 T2 = TypeVar('T2')

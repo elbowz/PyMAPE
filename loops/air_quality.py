@@ -25,7 +25,7 @@ Air Quality is made up of two loops:
 """
 
 """ LOOP MASTER DEFINITION AND CONTESTUALLY INSTANCED """
-loop_master = Loop(uid='aq_master')
+loop_master = Loop(uid='aq_master', level='1')
 
 
 @loop_master.register(uid='a_avg')
@@ -93,7 +93,7 @@ def make(name: str, room) -> Loop:
     logger.debug(f"{'=' * 6} Init Air Quality loop {name} {'=' * 6}")
 
     # INSTANCE MAPE ELEMENTS
-    loop = Loop(uid=name)
+    loop = Loop(uid=name, level='0')
     m = Monitor(loop=loop)
     e = Execute(loop=loop)
 

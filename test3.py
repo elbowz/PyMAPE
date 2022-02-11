@@ -103,8 +103,23 @@ async def async_main(*args, **kwargs):
     # Connect all Monitor in air quality loop to alarm loop (AVG)
     alarm.make()
 
-    # List of live loops
-    logger.debug(f"LOOPS: {list(mape.app.loops.keys())}")
+    # List of live loops and levels
+    logger.debug(f"LOOPS: {(mape.app.loops.keys())}")
+    logger.debug(f"LEVELS: {(mape.app.levels.keys())}")
+
+    # Iterate over level, loop, element
+    for level in mape.app.levels.values():
+        logger.debug(f"* {level.uid}")
+        for loop in level:
+            logger.debug(f" - {loop.uid}")
+            for element in loop:
+                logger.debug(f"  > {element.uid}")
+
+    # Access to loop/element
+    a = mape.app['1.aq_master.a_avg']
+    logger.debug(f"access by key/path string app['B.aq_master.a_avg']: {a.uid}")
+    uid = mape.app.levels['0'].aq_kitchen.Monitor.uid
+    logger.debug(f"access by dot notation mape.app.levels['A'].aq_kitchen.Monitor.uid: {uid}")
 
 if __name__ == '__main__':
     logger.debug('START...')

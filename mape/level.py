@@ -1,26 +1,26 @@
-from __future__ import annotations
 
-import mape
-from mape.level import Level
-from mape.utils import generate_uid
-from purse.collections import RedisKeySpace
-
-
-class App:
-    def __init__(self, redis) -> None:
-        self._redis = redis
+class Level:
+    """
+    Level is created only by application usually after a Loop request.
+    It aggregates Loops, and is used for Knowledge namespace.
+    Loop uid still be unique, and can be directly accessed by App.
+    If a Level (ie uid) already exist not throw exception/conflict (like Loop)
+    but simply return the existed one (see App.add_default_level())
+    """
+    def __init__(self, uid: str = None) -> None:
+        self._uid = uid
         self._loops = dict()
-        self._levels = dict()
-        self._k: RedisKeySpace = RedisKeySpace(redis=self._redis, prefix='__root.k.', value_type=bytes)
 
     def add_loop(self, loop):
-        uid = loop.uid or generate_uid(self._loops, prefix=loop.prefix)
+        uid = loop.uid
 
         if self.has_loop(uid) or hasattr(self, uid):
             return False
 
-        loop._uid = uid
-        loop._app = self
+        if loop in loop.app.levels:
+            del loop.app.levels.loops[uid]
+
+        loop._level = self
         self._loops[uid] = loop
 
         return uid
@@ -51,42 +51,25 @@ class App:
             try:
                 return self._loops[items[0]]
             except KeyError as err:
-                raise KeyError(f"Loop '{items[0]}' not exist")
+                raise KeyError(f"Loop '{items[0]}' not exist in level '{self.uid}'")
         elif count_items == 2:
             # path: 'loop_uid.element_uid'
             loop = self[items[0]]
             return loop[items[1]]
-        elif count_items == 3:
-            # path: 'level_uid.loop_uid.element_uid'
-            try:
-                level = self._levels[items[0]]
-            except KeyError as err:
-                raise KeyError(f"Level '{items[0]}' not exist")
-            return level[items[1]]
 
         raise KeyError(f"Path is malformed {path}")
 
     def __iter__(self):
         return iter(self._loops.values())
 
-    def add_default_level(self, level_uid: str):
-        """
-        Create and add the new level only if not already exist
-        ie. no conflict management like loop, if already exist return that
-        """
-        if level_uid not in self._levels:
-            self._levels[level_uid] = Level(level_uid)
-
-        return self._levels[level_uid]
-
     @property
     def loops(self):
         return self._loops
 
     @property
-    def levels(self):
-        return self._levels
+    def uid(self):
+        return self._uid
 
     @property
-    def k(self) -> RedisKeySpace:
+    def k(self):
         return self._k

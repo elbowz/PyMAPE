@@ -24,7 +24,7 @@ Air Quality is made up of two loops:
 """
 
 """ LOOP ALARM DEFINITION AND CONTESTUALLY INSTANCED """
-loop_alarm = Loop(uid='alarm')
+loop_alarm = Loop(uid='alarm', level='1')
 
 
 @loop_alarm.register(uid='a_avg')

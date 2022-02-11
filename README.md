@@ -36,6 +36,9 @@
 * Add REST, gRPC as SubObservable, PubObserver
 * Implementare esempio per il coordinated e per l'information sharing (magari entrambi in due modi diverse: CallMethod / link the port-out of Element with a filter)
 * Add __slots__ to class where can be useful (App, Loop, Element) (https://stackoverflow.com/questions/472000/usage-of-slots)
+* ~~Add level class (aggregate loop)~~
+* Add class Knowledge, an object compose loop, app, level
+* Generalize (eredita): App, Level, Loop, Element
 
 ## CLI
 * `sudo docker run --name mape-redis -p 6379:6379 --rm redis`
