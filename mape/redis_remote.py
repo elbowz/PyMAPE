@@ -24,7 +24,6 @@ def _deserializer(raw):
     return pickle.loads(raw)
 
 # TODO:
-#  * add deserializer
 #  * remove port from RedisPublishObserver?!
 
 
