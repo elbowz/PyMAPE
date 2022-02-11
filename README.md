@@ -39,6 +39,7 @@
 * ~~Add level class (aggregate loop)~~
 * Add class Knowledge, an object compose loop, app, level
 * Generalize (eredita): App, Level, Loop, Element
+* Sanitize uid (no RESERVED_SEPARATOR, RESRVED_PREPEND)
 
 ## CLI
 * `sudo docker run --name mape-redis -p 6379:6379 --rm redis`

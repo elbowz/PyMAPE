@@ -73,19 +73,31 @@ p_fan.subscribe()
 
 
 @mape.to_monitor_cls(param_self=True)
-def Monitor(item, on_next, self, something_useful=None):
+async def Monitor(item, on_next, self: Element, something_useful=None):
     """ Simulate polling (ie read on call) """
     air_quality = self.managed_element_room.current_air_quality
     # 'dst=' not used in dest_mapper
     # 'dst=' assume the existence of an element with uid 'execute_air_quality'
     msg = Message.create(air_quality, src=self, dst=self.loop.execute_air_quality)
+
+    await self.loop.app.k.keyspace.set('mymsg', msg)
+    await self.loop.k.keyspace.set('mymsg', msg)
+    await self.loop.level.k.keyspace.set('mymsg', msg)
+
     on_next(msg)
 
 
 @mape.to_execute_cls(default_uid='execute_air_quality',
                      default_ops_in=ops.distinct_until_changed(lambda item: item.value),
                      param_self=True)
-def Execute(item, on_next, self):
+async def Execute(item, on_next, self):
+
+    # import asyncstdlib as a
+    # async for i, val in a.enumerate(self.loop.app.k.keys()):
+    #     print(i, val)
+    mymsg = await self.loop.app.k.keyspace.get('mymsg')
+    logger.debug(mymsg)
+
     self.managed_element_room.set_fan(item.value)
 
 

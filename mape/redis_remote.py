@@ -66,6 +66,7 @@ class SubObservable(Observable):
         self._channels_pattern = channels_patterns if isinstance(channels_patterns, List) else [channels_patterns]
         self._disposable = CompositeDisposable()
 
+        # noinspection PyTypeChecker
         def on_subscribe(observer, scheduler):
             def _on_publish(message):
                 item = _deserializer(message['data'])

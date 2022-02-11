@@ -38,6 +38,11 @@ class Monitor(mape.base_elements.Monitor):
         while True and self.is_running:
             # item = Message(value=self.managed_element_room.current_temperature, src=self.path)
             item = self.managed_element_room.current_temperature
+
+            await self.loop.app.k.keyspace.set('mymsg', item)
+            await self.loop.k.keyspace.set('mymsg', item)
+            await self.loop.level.k.keyspace.set('mymsg', item)
+
             self._on_next(item)
             await asyncio.sleep(random.randint(1, 10))
 

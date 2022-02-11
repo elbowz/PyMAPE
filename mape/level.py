@@ -1,3 +1,7 @@
+import mape
+from mape.constants import RESRVED_PREPEND, RESERVED_SEPARATOR
+from mape.knowledge import Knowledge
+
 
 class Level:
     """
@@ -7,9 +11,13 @@ class Level:
     If a Level (ie uid) already exist not throw exception/conflict (like Loop)
     but simply return the existed one (see App.add_default_level())
     """
-    def __init__(self, uid: str = None) -> None:
+
+    def __init__(self, uid: str, app=None) -> None:
         self._uid = uid
+        self._app = app or mape.app
         self._loops = dict()
+
+        self._k = Knowledge(self.app.redis, f"{self.app.k.prefix}{RESRVED_PREPEND}{self.uid}")
 
     def add_loop(self, loop):
         uid = loop.uid
@@ -43,7 +51,7 @@ class Level:
         super().__getattribute__(uid)
 
     def __getitem__(self, path: str):
-        items = path.split('.')
+        items = path.split(RESERVED_SEPARATOR)
         count_items = len(items)
 
         if count_items == 1:
@@ -63,12 +71,16 @@ class Level:
         return iter(self._loops.values())
 
     @property
-    def loops(self):
-        return self._loops
-
-    @property
     def uid(self):
         return self._uid
+
+    @property
+    def app(self):
+        return self._app
+
+    @property
+    def loops(self):
+        return self._loops
 
     @property
     def k(self):

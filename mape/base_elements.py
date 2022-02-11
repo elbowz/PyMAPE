@@ -16,6 +16,7 @@ from dataclasses import dataclass, field
 
 import mape
 from mape import typing
+from mape.constants import RESERVED_SEPARATOR
 from .utils import init_logger, LogObserver, GenericObject, caller_module_name, task_exception, aio_call
 
 logger = logging.getLogger(__name__)
@@ -198,14 +199,14 @@ class Element(Observable, Observer, rx_typing.Subject):
 
         if Element.Debug.IN in lvl:
             self._debug.in_dispose = self._p_in.input.subscribe(
-                LogObserver(f"in > [{self._loop.uid}.{self.uid}]", module_name)
+                LogObserver(f"in > [{self._loop.uid}{RESERVED_SEPARATOR}{self.uid}]", module_name)
             )
         elif hasattr(self._debug, 'in_dispose'):
             self._debug.in_dispose.dispose()
 
         if Element.Debug.OUT in lvl:
             self._debug.out_dispose = self._p_out.output.subscribe(
-                LogObserver(f"[{self._loop.uid}.{self.uid}] > out", module_name)
+                LogObserver(f"[{self._loop.uid}{RESERVED_SEPARATOR}{self.uid}] > out", module_name)
             )
         elif hasattr(self._debug, 'out_dispose'):
             self._debug.out_dispose.dispose()

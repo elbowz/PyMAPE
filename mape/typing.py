@@ -64,6 +64,7 @@ class CallMethod(Item):
         return cls(name=name, args=args, kwargs=kwargs, src=cls._element2path(src), dst=cls._element2path(dst))
 
     def exec(self, obj_or_module):
+        # TODO: test with async Method (maybe something like): ElementFunc._on_next()
         return getattr(obj_or_module, self.name)(*self.args, **self.kwargs)
 
     def __repr__(self):

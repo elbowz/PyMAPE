@@ -10,9 +10,11 @@ import types
 import mape
 
 from mape.base_elements import Element, Monitor, Analyze, Plan, Execute, UID, to_element_cls, make_func_class
+from mape.knowledge import Knowledge
 from mape.level import Level
 from mape.utils import generate_uid
 from mape.typing import MapeLoop, OpsChain
+from mape.constants import RESRVED_PREPEND, RESERVED_SEPARATOR
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +24,8 @@ TElement = TypeVar('TElement')
 class Loop(MapeLoop):
     prefix: str = 'l_'
 
-    def __init__(self, uid: str = None, level: Optional[str] = None, app=None) -> None:
+    def __init__(self, uid: str = None, level: str = '', app=None) -> None:
         self._uid = uid
-        self._level = None
         self._elements = dict()
         self._app: mape.application.App = app or mape.app
 
@@ -34,11 +35,12 @@ class Loop(MapeLoop):
         if not self._uid:
             raise ValueError(f"'{uid}' already taken, or name is protected")
 
-        if level:
-            self._level = self._app.add_default_level(level)
+        self._level = self._app.add_default_level(level)
 
-            if not self.add_to_level(self._level):
-                raise ValueError(f"'{uid}' name is protected")
+        if not self.add_to_level(self._level):
+            raise ValueError(f"'{uid}' name is protected")
+
+        self._k = Knowledge(self.app.redis, f"{self.level.k.prefix}{RESRVED_PREPEND}{self.uid}")
 
     def add_to_app(self, app):
         return app.add_loop(self)
@@ -96,6 +98,14 @@ class Loop(MapeLoop):
     @property
     def app(self):
         return self._app
+
+    @property
+    def level(self):
+        return self._level
+
+    @property
+    def k(self):
+        return self._k
 
     @property
     def elements(self):

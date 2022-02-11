@@ -1,17 +1,23 @@
 from __future__ import annotations
 
+from aioredis import Redis
+from typing import Any, Dict, Type, Union, Tuple, Iterable, List, TypeVar
+
 import mape
 from mape.level import Level
+from mape.knowledge import Knowledge
 from mape.utils import generate_uid
-from purse.collections import RedisKeySpace
+from mape.constants import RESRVED_PREPEND, RESERVED_SEPARATOR
 
 
 class App:
-    def __init__(self, redis) -> None:
+    uid: str = 'app'
+
+    def __init__(self, redis: Redis) -> None:
         self._redis = redis
         self._loops = dict()
         self._levels = dict()
-        self._k: RedisKeySpace = RedisKeySpace(redis=self._redis, prefix='__root.k.', value_type=bytes)
+        self._k = Knowledge(self._redis, f"{RESRVED_PREPEND}{self.uid}")
 
     def add_loop(self, loop):
         uid = loop.uid or generate_uid(self._loops, prefix=loop.prefix)
@@ -43,7 +49,7 @@ class App:
         super().__getattribute__(uid)
 
     def __getitem__(self, path: str):
-        items = path.split('.')
+        items = path.split(RESERVED_SEPARATOR)
         count_items = len(items)
 
         if count_items == 1:
@@ -75,9 +81,13 @@ class App:
         ie. no conflict management like loop, if already exist return that
         """
         if level_uid not in self._levels:
-            self._levels[level_uid] = Level(level_uid)
+            self._levels[level_uid] = Level(level_uid, app=self)
 
         return self._levels[level_uid]
+
+    @property
+    def redis(self):
+        return self._redis
 
     @property
     def loops(self):
@@ -88,5 +98,5 @@ class App:
         return self._levels
 
     @property
-    def k(self) -> RedisKeySpace:
+    def k(self):
         return self._k
