@@ -27,20 +27,26 @@
 * ~~Create Message and CallMethod factory method. Create used in Monitor. eg Message.create(value, element, dst=None)...where form element extract the src path~~
 * Add Redis
   * share/sync loops/elements 
-  * as shared memory (https://github.com/plataux/purse)
+  ~~* as shared memory (https://github.com/plataux/purse)~~
   ~~* pub/sub or stream for distributed communication~~
-  * asyncio event shared?!
-  * decorator for event publish/subscribe (namespaced in loop.uid or global)
+  * asyncio event shared?! (https://docs.python.org/3/library/asyncio-sync.html#event)
+  ~~* decorator for event publish/subscribe~~ 
+    * namespaced in loop.uid or global
   * https://stackoverflow.com/questions/28785383/how-to-disable-persistence-with-redis
   * embed redis in python (https://pypi.org/project/redislite/, https://github.com/chekart/rediserver/blob/master/rediserver/test/embedded.py)
-* Add REST, gRPC as SubObservable, PubObserver
+* SubObservable, PubObserver
+  * REST 
+  * gRPC
+  ~~* Redis~~
 * Implementare esempio per il coordinated e per l'information sharing (magari entrambi in due modi diverse: CallMethod / link the port-out of Element with a filter)
 * Add __slots__ to class where can be useful (App, Loop, Element) (https://stackoverflow.com/questions/472000/usage-of-slots)
 * ~~Add level class (aggregate loop)~~
-* Add class Knowledge, an object compose loop, app, level
+~~* Add class Knowledge, an object compose loop, app, level~~
 * Generalize (eredita): App, Level, Loop, Element
 * Sanitize uid (no RESERVED_SEPARATOR, RESRVED_PREPEND)
 
 ## CLI
-* `sudo docker run --name mape-redis -p 6379:6379 --rm redis`
-* `CONFIG SET notify-keyspace-events KE$` (https://redis.io/topics/notifications)
+* `sudo docker run --name mape-redis -p 6379:6379 -v $(pwd)/docker/redis:/usr/local/etc/redis --rm redis redis-server /usr/local/etc/redis/redis.conf`
+* `CONFIG SET notify-keyspace-events KA` (https://redis.io/topics/notifications)
+* `sudo docker exec -it mape-redis bash`
+* `pyenv activate venv-3.8.12`

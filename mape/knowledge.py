@@ -24,7 +24,7 @@ class Knowledge:
         self._redis: Redis = redis
         self._prefix: str = prefix + RESERVED_SEPARATOR
 
-        self._keyspace = self.create_keyspace(RESRVED_PREPEND + 'keyspace', value_type=Pickled)
+        self._keyspace = self.create_keyspace(RESRVED_PREPEND + 'default_keyspace', value_type=Pickled)
 
     def create_keyspace(self, key: str, value_type: Type[T]):
         return RedisKeySpace(self._redis, self._prefix + key + RESERVED_SEPARATOR, value_type=value_type)

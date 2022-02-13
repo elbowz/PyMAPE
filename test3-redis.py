@@ -20,14 +20,50 @@ logging.getLogger('mape').setLevel(logging.DEBUG)
 
 async def async_main(*args, **kwargs):
 
-    loop = mape.Loop(uid='redis')
+    loop = mape.Loop(uid='redis-test')
 
     @loop.execute
     def executer(item, on_next):
         logger.debug(item)
 
-    from mape.redis_remote import SubObservable
-    SubObservable(['aq_bedroom.Monitor', 'aq_kitchen.Monitor']).subscribe(executer)
+    from mape.redis_remote import SubObservable, subscribe_handler_deco, subscribe_handler
+
+    @subscribe_handler_deco('__keyspace@*__:*', full_message=True, deserializer=lambda x: x)
+    def keyspace(message):
+        print("keyspace", message)
+
+    await asyncio.sleep(6)
+    keyspace.cancel()
+    try:
+        await keyspace.task
+    except asyncio.CancelledError:
+        print("after")
+
+    sub = SubObservable(['aq_bedroom.Monitor', 'aq_kitchen.Monitor']).subscribe(executer)
+    await asyncio.sleep(6)
+    print('dispose')
+    sub.dispose()
+
+    @subscribe_handler_deco('aq_*.Monitor')
+    def subscribed_func(message):
+        print('message', message)
+
+    await asyncio.sleep(6)
+    subscribed_func.cancel()
+    subscribed_func(666)
+    print('cancel')
+
+    class Test:
+        def test(self, item):
+            print("test", item)
+
+    ciao = Test()
+    task = subscribe_handler({'aq_*.Monitor': ciao.test})
+
+    await asyncio.sleep(6)
+    task.cancel()
+    print('cancel')
+
 
 if __name__ == '__main__':
     logger.debug('START...')
