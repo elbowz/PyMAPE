@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import aioredis
 import pickle
@@ -16,6 +18,9 @@ from .base_elements import Port
 from .utils import log_task_exception
 
 
+# TODO:
+#  * move elsewhere (remote/redis?!)
+#  * use _obj_from_raw/_obj_to_raw in redis.collections_path for serializer/deserializer
 def _serializer(obj):
     return pickle.dumps(obj, pickle.HIGHEST_PROTOCOL)
 
@@ -46,7 +51,7 @@ def subscribe_handler(sub_handlers: Dict[str, Callable], full_message=False, des
         message['data'] = deserializer(message['data'])
         callback(message if full_message else message['data'])
 
-    def _on_cancel(_):
+    def on_cancel(_):
         sub_channels = sub_handlers.keys()
         asyncio.create_task(pubsub.unsubscribe(sub_channels))
 
@@ -59,7 +64,7 @@ def subscribe_handler(sub_handlers: Dict[str, Callable], full_message=False, des
 
     pubsub = redis.pubsub()
     task = asyncio.create_task(init_redis_sub())
-    task.add_done_callback(_on_cancel)
+    task.add_done_callback(on_cancel)
     return task
 
 

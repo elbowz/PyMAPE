@@ -4,14 +4,13 @@ import functools
 import logging
 import inspect
 from functools import wraps, partial
-from typing import Type, Any, Tuple, List, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple, TypeVar
+from typing import Type, Any, Tuple, List, Dict, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple, TypeVar
 import types
 
 import mape
 
 from mape.base_elements import Element, Monitor, Analyze, Plan, Execute, UID, to_element_cls, make_func_class
 from mape.knowledge import Knowledge
-from mape.level import Level
 from mape.utils import generate_uid
 from mape.typing import MapeLoop, OpsChain
 from mape.constants import RESRVED_PREPEND, RESERVED_SEPARATOR
@@ -26,7 +25,7 @@ class Loop(MapeLoop):
 
     def __init__(self, uid: str = None, level: str = '', app=None) -> None:
         self._uid = uid
-        self._elements = dict()
+        self._elements: Dict[str, Element] = dict()
         self._app: mape.application.App = app or mape.app
 
         # Add Loop to App
@@ -82,7 +81,7 @@ class Loop(MapeLoop):
 
         super().__getattribute__(uid)
 
-    def __getitem__(self, uid):
+    def __getitem__(self, uid) -> Element:
         try:
             return self._elements[uid]
         except KeyError as err:

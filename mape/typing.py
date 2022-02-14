@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Type, Any, List, Tuple, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple, TypeVar
+from typing import Any, List, Tuple, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple, TypeVar
 
 from rx.core.typing import Observer
 

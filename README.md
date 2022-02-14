@@ -44,9 +44,12 @@
 ~~* Add class Knowledge, an object compose loop, app, level~~
 * Generalize (eredita): App, Level, Loop, Element
 * Sanitize uid (no RESERVED_SEPARATOR, RESRVED_PREPEND)
+* Merge mape.__init__ e Application.app ?!
+* convert  Optional[str] = None => str | None = None
 
 ## CLI
 * `sudo docker run --name mape-redis -p 6379:6379 -v $(pwd)/docker/redis:/usr/local/etc/redis --rm redis redis-server /usr/local/etc/redis/redis.conf`
 * `CONFIG SET notify-keyspace-events KA` (https://redis.io/topics/notifications)
+* `curl -X POST -H "Content-Type: text/plain" --data "this is raw data" http://localhost:6060/loops/{loop_uid}/element/{element_uid}`
 * `sudo docker exec -it mape-redis bash`
 * `pyenv activate venv-3.8.12`

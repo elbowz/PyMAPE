@@ -4,6 +4,8 @@ from aioredis import Redis
 from typing import Any, Dict, Type, Union, Tuple, Iterable, List, TypeVar
 
 import mape
+from mape.loop import Loop
+from mape.base_elements import Element
 from mape.level import Level
 from mape.knowledge import Knowledge
 from mape.utils import generate_uid
@@ -14,9 +16,9 @@ class App:
     uid: str = 'app'
 
     def __init__(self, redis: Redis) -> None:
-        self._redis = redis
-        self._loops = dict()
-        self._levels = dict()
+        self._redis: Redis = redis
+        self._loops: Dict[str, Loop] = dict()
+        self._levels: Dict[str, Level] = dict()
         self._k = Knowledge(self._redis, f"{RESRVED_PREPEND}{self.uid}")
 
     def add_loop(self, loop):
@@ -48,7 +50,7 @@ class App:
 
         super().__getattribute__(uid)
 
-    def __getitem__(self, path: str):
+    def __getitem__(self, path: str) -> Loop | Element | Level:
         items = path.split(RESERVED_SEPARATOR)
         count_items = len(items)
 

@@ -172,6 +172,11 @@ class Element(Observable, Observer, rx_typing.Subject):
 
         # Accept pipe(), ops(), (ops(),)
         # TODO: I think is not so good, and not always it works
+        # hint:
+        #   >>> seq = seq if isinstance(seq, (List, Tuple)) else (seq,)
+        #   >>> sqe = seq if isinstance(seq, Sequence) else (seq,) # take also string (not good)
+        #   >>> routes: typing.Sequence[BaseRoute] = None,
+        #   >>> self.routes = [] if routes is None else list(routes)
         ops_in = list(ops_in) if isinstance(ops_in, Tuple) else [ops_in]
         ops_out = list(ops_out) if isinstance(ops_out, Tuple) else [ops_out]
 
