@@ -32,6 +32,8 @@ rx_scheduler: Optional[AsyncIOScheduler] = None
 redis: Optional[aioredis.Redis] = None
 uvicorn_webserver: Optional[UvicornDaemon] = None
 fastapi: Optional[FastAPI] = None
+# TODO: hosts_port is too ugly here
+host_port: Optional[str] = None
 app: Optional[App] = None
 
 
@@ -61,8 +63,8 @@ def stop():
         uvicorn_webserver.stop()
 
 
-def init(debug=False, asyncio_loop=None, redis_url=None, enable_rest=True):
-    global aio_loop, rx_scheduler, redis, fastapi, app
+def init(debug=False, asyncio_loop=None, redis_url=None, rest_host_port=None):
+    global aio_loop, rx_scheduler, redis, fastapi, host_port, app
 
     # loop = asyncio.new_event_loop()
     # asyncio.set_event_loop(loop)
@@ -96,8 +98,9 @@ def init(debug=False, asyncio_loop=None, redis_url=None, enable_rest=True):
 
     app = App(redis)
 
-    if enable_rest:
+    if rest_host_port:
         fastapi = rest_setup(app, __version__)
+        host_port = rest_host_port
 
     set_debug(debug)
 
@@ -114,7 +117,8 @@ def run(entrypoint: Union[Callable, Coroutine] = None):
             # The first 4 routes are instanced by default (ie swagger)
             from mape.remote.rest import UvicornDaemon
 
-            uvicorn_webserver = UvicornDaemon(fastapi)
+            host, port = host_port.split(':')
+            uvicorn_webserver = UvicornDaemon(fastapi, host=host, port=port)
             uvicorn_webserver.start()
 
             system_path = fastapi.routes[:init_len_routes]

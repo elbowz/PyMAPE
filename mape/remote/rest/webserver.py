@@ -11,7 +11,7 @@ class UvicornDaemon:
         kwargs = {
             **kwargs,
             'host': host,
-            'port': port,
+            'port': int(port),
             'log_level': log_level
         }
 

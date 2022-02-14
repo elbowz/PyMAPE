@@ -13,7 +13,7 @@ class Port(str, Enum):
     p_out = 'out'
 
 
-class Notifications(str, Enum):
+class Notification(str, Enum):
     next = 'next'
     error = 'error'
     completed = 'completed'
@@ -54,7 +54,7 @@ def api_setup(fastapi_app: FastAPI, mape_app: mape.App):
     async def element_notify(request: Request,
                              element: common_element = Depends(),
                              port: Port = Port.p_in,
-                             notifications: Notifications = Notifications.next):
+                             notification: Notification = Notification.next):
         """
         Create an item with all the information:
 
@@ -64,16 +64,16 @@ def api_setup(fastapi_app: FastAPI, mape_app: mape.App):
         - **tax**: if the item doesn't have tax, you can omit this
         - **tags**: a set of unique tag strings for this item
         """
-        print(port, notifications, port is Port.p_in, element)
-
         port = element.port_in if port is Port.p_in else element.port_out
 
         payload = await request.body()
         # TODO: deserialize
+        from mape.redis_remote import _deserializer
+        payload = _deserializer(payload)
 
-        if notifications is Notifications.next:
+        if notification is Notification.next:
             port.on_next(payload)
-        elif notifications is Notifications.error:
+        elif notification is Notification.error:
             port.on_error(payload)
-        elif notifications is Notifications.completed:
+        elif notification is Notification.completed:
             port.on_completed()

@@ -72,7 +72,7 @@ def _obj_to_raw(value_type: Type[T], value: T) -> str | bytes:
         assert isinstance(value, BaseModel)
         return value.json()
     elif value_type is Pickled:
-        return pickle.dumps(value)
+        return pickle.dumps(value, pickle.HIGHEST_PROTOCOL)
     elif isinstance(value, dict):
         return json.dumps(value)
     elif isinstance(value, (str, bytes)):

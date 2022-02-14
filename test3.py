@@ -142,7 +142,7 @@ if __name__ == '__main__':
     #
     # loop.create_task(my_coroutine())
 
-    mape.init(debug=True, redis_url='redis://localhost:6379', enable_rest=True)
+    mape.init(debug=True, redis_url='redis://localhost:6379', rest_host_port='0.0.0.0:6060')
     mape.run(entrypoint=async_main('test'))
 
     logger.debug('...STOP')

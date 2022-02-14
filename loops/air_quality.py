@@ -127,6 +127,8 @@ def make(name: str, room) -> Loop:
 
     from mape.redis_remote import PubObserver
     m.subscribe(PubObserver(f"{m.path}"))
+    from mape.remote.rest import POSTObserver
+    m.subscribe(POSTObserver('http://0.0.0.0:6061', '/loops/rest-test/elements/executer'))
 
     return loop
 
