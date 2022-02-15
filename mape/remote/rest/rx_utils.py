@@ -12,20 +12,36 @@ from rx.core import Observer, Observable
 
 import mape
 from mape.utils import log_task_exception, task_exception
+from mape.constants import RESERVED_SEPARATOR
 
-from .api import Port, Notification
+from .api import Port, Notification, element_notify_path
 
 logger = logging.getLogger(__name__)
+
+# TODO:
+# * better implemented with a queue (like PubObserver) to preserve notifications order
+
+
+def _element_path2url_path(element_path):
+    loop_uid, element_uid = element_path.split(RESERVED_SEPARATOR)
+    return element_notify_path.format(loop_uid=loop_uid, element_uid=element_uid)
 
 
 class POSTObserver(Observer):
 
-    def __init__(self, base_url: str, path: str, port: Port = Port.p_in, serializer=None,
+    def __init__(self,
+                 base_url: str,
+                 path: str,
+                 port: Port = Port.p_in,
+                 serializer=None,
                  session: aiohttp.ClientSession = None) -> None:
         self._base_url = base_url
-        # TODO: convert path from loop.element => /loops/... (if string start with '/')
-        self._path = path
-        self._url_path = path
+
+        try:
+            self._path = path if path.startswith('/') else _element_path2url_path(path)
+        except ValueError as e:
+            logger.error(f"Malformed element_path: '{path}'")
+
         self._port = port
         self._session = session or aiohttp.ClientSession(base_url)
 
@@ -51,11 +67,10 @@ class POSTObserver(Observer):
             data = self._serializer(value)
             params = {'port': self._port.value, 'notification': notification.value}
 
-            async with self._session.post(self._url_path, data=data, params=params) as resp:
+            async with self._session.post(self._path, data=data, params=params) as resp:
                 if resp.status != 200:
-                    print("something go wrong")
                     text = await resp.text()
-                    print(json.loads(text))
+                    logger.error(f"Response from '{self._path}' status {resp.status}: '{json.loads(text)}'")
 
         except aiohttp.client_exceptions.ClientError as e:
             logger.error(e)

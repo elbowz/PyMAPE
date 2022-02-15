@@ -19,6 +19,9 @@ class Notification(str, Enum):
     completed = 'completed'
 
 
+element_notify_path = '/loops/{loop_uid}/elements/{element_uid}'
+
+
 def api_setup(fastapi_app: FastAPI, mape_app: mape.App):
     def common_loop(loop_uid: str) -> Loop:
         if loop_uid not in mape_app.loops:
@@ -47,7 +50,7 @@ def api_setup(fastapi_app: FastAPI, mape_app: mape.App):
     async def get_levels():
         return list(mape_app.levels.keys())
 
-    @fastapi_app.post('/loops/{loop_uid}/elements/{element_uid}',
+    @fastapi_app.post(element_notify_path,
                       tags=['elements'],
                       summary='Create an item',
                       response_description='The created item')

@@ -125,10 +125,14 @@ def make(name: str, room) -> Loop:
         # We not need connect/subscribe to the executor due the use of gateway on plan
     ).subscribe(scheduler=mape.rx_scheduler)
 
+    from typing import cast
+    m = cast(Element, m)
+
     from mape.redis_remote import PubObserver
     m.subscribe(PubObserver(f"{m.path}"))
+
     from mape.remote.rest import POSTObserver
-    m.subscribe(POSTObserver('http://0.0.0.0:6061', '/loops/rest-test/elements/executer'))
+    m.subscribe(POSTObserver('http://0.0.0.0:6061', 'rest-test.executer'))
 
     return loop
 
