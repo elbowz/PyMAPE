@@ -11,9 +11,9 @@ from mape.remote.redis import (
     RedisPriorityQueue,
     RedisQueue,
     RedisLifoQueue,
-    Redlock,
-    Pickled
+    Redlock
 )
+from mape.remote.de_serializer import Pickled
 from mape.constants import RESRVED_PREPEND, RESERVED_SEPARATOR
 
 T = TypeVar('T')

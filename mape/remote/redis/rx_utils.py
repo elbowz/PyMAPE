@@ -1,71 +1,21 @@
 from __future__ import annotations
 
 import asyncio
-import aioredis
-import pickle
-from functools import partial, wraps
+from functools import partial
 
 import rx
 from rx.subject import Subject
 from rx.core import Observer, Observable
-from rx.disposable import Disposable, CompositeDisposable
+from rx.disposable import Disposable
 from rx import operators as ops
 
-from typing import Type, Any, List, Dict, Tuple, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple
+from typing import List
 
 import mape
-from .base_elements import Port
-from .utils import log_task_exception
-
-
-# TODO:
-#  * move elsewhere (remote/redis?!)
-#  * use _obj_from_raw/_obj_to_raw in redis.collections_path for serializer/deserializer
-def _serializer(obj):
-    return pickle.dumps(obj, pickle.HIGHEST_PROTOCOL)
-
-
-def _deserializer(raw):
-    return pickle.loads(raw)
-
-
-def subscribe_handler_deco(channels_patterns, full_message=False, deserializer=None, redis=None):
-    channels_patterns = channels_patterns if isinstance(channels_patterns, List) else [channels_patterns]
-
-    def decorator(func):
-        sub_handlers = {pattern: func for pattern in channels_patterns}
-        task = subscribe_handler(sub_handlers, full_message, deserializer, redis)
-
-        func.task = task
-        func.cancel = task.cancel
-        return func
-
-    return decorator
-
-
-def subscribe_handler(sub_handlers: Dict[str, Callable], full_message=False, deserializer=None, redis=None):
-    redis = redis or mape.redis
-    deserializer = deserializer or _deserializer
-
-    def _on_publish(message, callback):
-        message['data'] = deserializer(message['data'])
-        callback(message if full_message else message['data'])
-
-    def on_cancel(_):
-        sub_channels = sub_handlers.keys()
-        asyncio.create_task(pubsub.unsubscribe(sub_channels))
-
-    @log_task_exception
-    async def init_redis_sub():
-        patterns_callbacks = {pattern: partial(_on_publish, callback=handler) for pattern, handler in
-                              sub_handlers.items()}
-        await pubsub.psubscribe(**patterns_callbacks)
-        await pubsub.run()
-
-    pubsub = redis.pubsub()
-    task = asyncio.create_task(init_redis_sub())
-    task.add_done_callback(on_cancel)
-    return task
+from mape.base_elements import Port
+from mape.utils import log_task_exception
+from .pubsub import subscribe_handler
+from ..de_serializer import obj_to_raw, Pickled
 
 
 class PubObserver(Observer):
@@ -74,7 +24,7 @@ class PubObserver(Observer):
         self._channel = channel
         self._queue = asyncio.Queue()
         self._redis = redis or mape.redis
-        self._serializer = serializer or _serializer
+        self._serializer = serializer or partial(obj_to_raw, Pickled)
 
         self._p_in = Port(input=Subject(), operators=[ops.materialize()])
         self._p_in.pipe = self._p_in.input.pipe(*self._p_in.operators)
@@ -123,3 +73,5 @@ class SubObservable(Observable):
 
     def __del__(self):
         self.unsubscribe()
+
+

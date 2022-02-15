@@ -46,6 +46,7 @@
 * Sanitize uid (no RESERVED_SEPARATOR, RESRVED_PREPEND)
 * Merge mape.__init__ e Application.app ?!
 * convert  Optional[str] = None => str | None = None
+* Message, CallMethod as pydantic.BaseModel
 
 ## CLI
 * `sudo docker run --name mape-redis -p 6379:6379 -v $(pwd)/docker/redis:/usr/local/etc/redis --rm redis redis-server /usr/local/etc/redis/redis.conf`

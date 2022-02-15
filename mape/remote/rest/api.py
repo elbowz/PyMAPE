@@ -1,4 +1,7 @@
 from enum import Enum
+from typing import Callable
+from functools import partial
+
 from fastapi import FastAPI, HTTPException, Depends
 from starlette.requests import Request
 from starlette.responses import Response
@@ -6,6 +9,8 @@ from starlette.responses import Response
 import mape
 from mape.loop import Loop
 from mape.base_elements import Element
+
+from ..de_serializer import obj_from_raw, Pickled
 
 
 class Port(str, Enum):
@@ -22,7 +27,9 @@ class Notification(str, Enum):
 element_notify_path = '/loops/{loop_uid}/elements/{element_uid}'
 
 
-def api_setup(fastapi_app: FastAPI, mape_app: mape.App):
+def api_setup(fastapi_app: FastAPI, mape_app: mape.App, deserializer: Callable = None):
+    deserializer = deserializer or partial(obj_from_raw, Pickled)
+
     def common_loop(loop_uid: str) -> Loop:
         if loop_uid not in mape_app.loops:
             raise HTTPException(status_code=400, detail=f"Loop '{loop_uid}' does not exist")
@@ -69,14 +76,11 @@ def api_setup(fastapi_app: FastAPI, mape_app: mape.App):
         """
         port = element.port_in if port is Port.p_in else element.port_out
 
-        payload = await request.body()
-        # TODO: deserialize
-        from mape.redis_remote import _deserializer
-        payload = _deserializer(payload)
+        body = deserializer(await request.body())
 
         if notification is Notification.next:
-            port.on_next(payload)
+            port.on_next(body)
         elif notification is Notification.error:
-            port.on_error(payload)
+            port.on_error(body)
         elif notification is Notification.completed:
             port.on_completed()

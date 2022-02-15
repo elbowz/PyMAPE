@@ -128,7 +128,7 @@ def make(name: str, room) -> Loop:
     from typing import cast
     m = cast(Element, m)
 
-    from mape.redis_remote import PubObserver
+    from mape.remote.redis import PubObserver
     m.subscribe(PubObserver(f"{m.path}"))
 
     from mape.remote.rest import POSTObserver

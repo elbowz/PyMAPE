@@ -1,13 +1,13 @@
-from typing import Any
-import logging
+from __future__ import annotations
 
+import logging
 import json
 import aiohttp
 import asyncio
 
+from typing import Any
+from functools import partial
 from aiohttp.client_exceptions import ClientError
-
-from rx.subject import Subject
 from rx.core import Observer, Observable
 
 import mape
@@ -15,6 +15,7 @@ from mape.utils import log_task_exception, task_exception
 from mape.constants import RESERVED_SEPARATOR
 
 from .api import Port, Notification, element_notify_path
+from ..de_serializer import obj_to_raw, obj_from_raw, Pickled
 
 logger = logging.getLogger(__name__)
 
@@ -44,10 +45,7 @@ class POSTObserver(Observer):
 
         self._port = port
         self._session = session or aiohttp.ClientSession(base_url)
-
-        # TODO: use _obj_from_row
-        from mape.redis_remote import _serializer
-        self._serializer = serializer or _serializer
+        self._serializer = serializer or partial(obj_to_raw, Pickled)
         # self._queue = asyncio.Queue()
 
         super().__init__()
@@ -81,3 +79,53 @@ class POSTObserver(Observer):
 
     def __del__(self):
         self.dispose()
+
+
+# TODO: to finish
+import rx
+from rx.disposable import Disposable
+from fastapi import FastAPI
+from starlette.requests import Request
+from starlette.responses import Response
+
+
+class PostObservable(Observable):
+    def __init__(self, path, deserializer=None, fastapi: FastAPI | None = None) -> None:
+        self._path = path
+        self._fastapi = fastapi or mape.fastapi
+        self._deserializer = deserializer or partial(obj_from_raw, Pickled)
+
+        self._task = None
+
+        def on_subscribe(observer, scheduler):
+
+            async def on_next1(request: Request):
+                print(await request.body())
+                return await request.body()
+                # observer.on_next(value)
+
+            self._fastapi.post(self._path, response_class=Response)(on_next1)
+
+            print("subscribed", self._path)
+
+            return Disposable()
+
+        self._auto_connect = rx.create(on_subscribe).pipe(ops.dematerialize(), ops.share())
+        super().__init__()
+
+    def _subscribe_core(self, observer, scheduler=None):
+        return self._auto_connect.subscribe(observer, scheduler=scheduler)
+
+    # TODO: re-running create unpredictable error (endpoint appear and disappear
+    # def close(self):
+    #     # Find the route by path
+    #     # try:
+    #     route = [route for route in self._fastapi.routes if route.path == self._path]
+    #     if len(route):
+    #         self._fastapi.routes.remove(route[0])
+    #     # except (IndexError, ValueError) as e:
+    #     #     # already removed (ie. webserver shutdown)
+    #     #     pass
+    #
+    # def __del__(self):
+    #     self.close()
