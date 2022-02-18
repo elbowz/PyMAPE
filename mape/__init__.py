@@ -32,8 +32,6 @@ rx_scheduler: Optional[AsyncIOScheduler] = None
 redis: Optional[aioredis.Redis] = None
 uvicorn_webserver: Optional[UvicornDaemon] = None
 fastapi: Optional[FastAPI] = None
-# TODO: hosts_port is too ugly here
-host_port: Optional[str] = None
 app: Optional[App] = None
 
 
@@ -51,6 +49,7 @@ def setup_logger():
 
 def stop():
     aio_loop.stop()
+    uvicorn_webserver and uvicorn_webserver.stop()
 
     # Let's also cancel all running tasks:
     pending = asyncio.Task.all_tasks()
@@ -59,12 +58,33 @@ def stop():
         logger.debug(f"Closing still running task: {task!r}")
         task.cancel()
 
-    if uvicorn_webserver:
-        uvicorn_webserver.stop()
+
+def _start_web_server(host_port: str, loop):
+    global uvicorn_webserver
+
+    init_len_routes: Final = 4
+
+    # Start Uvicorn webserver (forking a process) with the created routes by FastAPI
+    if fastapi and (len_routes := len(fastapi.routes)) > init_len_routes:
+        # The first 4 routes are instanced by default (ie swagger)
+        from mape.remote.rest import UvicornDaemon
+
+        host, port = host_port.split(':')
+        uvicorn_webserver = UvicornDaemon(app=fastapi, loop=loop, host=host, port=port)
+
+        system_path = fastapi.routes[:init_len_routes]
+        mape_path = fastapi.routes[init_len_routes:]
+
+        logger.debug(f"System endpoints and API documentation: {','.join([route.path for route in system_path])}")
+        logger.debug(f"Defined {len_routes - init_len_routes} REST MAPE endpoints:")
+        for route in mape_path:
+            logger.debug(f" * {route.path}")
+
+        logger.info('Webserver started: No more endpoint can be added since now!')
 
 
 def init(debug=False, asyncio_loop=None, redis_url=None, rest_host_port=None):
-    global aio_loop, rx_scheduler, redis, fastapi, host_port, app
+    global aio_loop, rx_scheduler, redis, fastapi, app
 
     # loop = asyncio.new_event_loop()
     # asyncio.set_event_loop(loop)
@@ -87,12 +107,6 @@ def init(debug=False, asyncio_loop=None, redis_url=None, rest_host_port=None):
 
     rx_scheduler = rx_scheduler or AsyncIOScheduler(aio_loop)
 
-    # Catch stop execution (ie. ctrl+c or brutal stop)
-    for signal_name in ('SIGINT', 'SIGTERM'):
-        aio_loop.add_signal_handler(getattr(signal, signal_name), stop)
-
-    # loop.set_exception_handler(lambda *args: print("exception_handler", *args))
-
     if redis_url:
         redis = aioredis.from_url(redis_url, db=0)
 
@@ -100,37 +114,19 @@ def init(debug=False, asyncio_loop=None, redis_url=None, rest_host_port=None):
 
     if rest_host_port:
         fastapi = rest_setup(app, __version__)
-        host_port = rest_host_port
+        _start_web_server(rest_host_port, aio_loop)
 
     set_debug(debug)
 
 
 def run(entrypoint: Union[Callable, Coroutine] = None):
     def on_done(_):
-        """ At the end of entrypoint all FastAPI path must be registered """
-        global uvicorn_webserver
+        # Catch stop execution (ie. ctrl+c or brutal stop)
+        # notes: set the handler here to overwrite the Uvicorn handlers
+        for signal_name in (signal.SIGINT, signal.SIGTERM):
+            aio_loop.add_signal_handler(signal_name, stop)
 
-        init_len_routes: Final = 4
-
-        # Start Uvicorn webserver (forking a process) with the created routes by FastAPI
-        if fastapi and (len_routes := len(fastapi.routes) > init_len_routes):
-            # The first 4 routes are instanced by default (ie swagger)
-            from mape.remote.rest import UvicornDaemon
-
-            host, port = host_port.split(':')
-            uvicorn_webserver = UvicornDaemon(fastapi, host=host, port=port)
-            uvicorn_webserver.start()
-
-            system_path = fastapi.routes[:init_len_routes]
-            mape_path = fastapi.routes[init_len_routes:]
-
-            logger.debug(f"Defined {init_len_routes - len_routes} REST API endpoints")
-            logger.debug(f"System endpoints and API documentation: {','.join([route.path for route in system_path])}")
-            logger.debug(f"MAPE endpoints:")
-            for route in mape_path:
-                logger.debug(f" * {route.path}")
-
-            logger.info('Webserver started: No more endpoint can be added since now!')
+        # loop.set_exception_handler(lambda *args: print("exception_handler", *args))
 
     if entrypoint is not None:
         if asyncio.iscoroutine(entrypoint):
