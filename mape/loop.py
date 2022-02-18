@@ -94,6 +94,9 @@ class Loop(MapeLoop):
     def uid(self):
         return self._uid
 
+    def __str__(self) -> str:
+        return self.uid
+
     @property
     def app(self):
         return self._app

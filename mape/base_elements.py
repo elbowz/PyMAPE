@@ -222,7 +222,7 @@ class Element(Observable, Observer, rx_typing.Subject):
                   scheduler: Optional[rx_typing.Scheduler] = None, param: Any = None) -> rx_typing.Disposable:
 
         # print(self.uid, observer, param)
-
+        scheduler = scheduler or mape.rx_scheduler
         return super().subscribe(observer, on_error, on_completed, on_next, scheduler=scheduler)
 
     def _subscribe_core(self, observer, scheduler=None):
@@ -308,6 +308,9 @@ class Element(Observable, Observer, rx_typing.Subject):
     @property
     def uid(self) -> str:
         return self._uid
+
+    def __str__(self) -> str:
+        return self.uid
 
     @property
     def loop(self) -> mape.Loop:
