@@ -49,7 +49,7 @@ class VirtualCar:
     def set_callback(self, name: str, callback: Callable, init=True):
         self._callbacks[name] = callback
 
-        if init and (value := getattr(self, name, None)):
+        if init and (value := getattr(self, name, None)) is not None:
             callback({name: value})
 
     def __setattr__(self, name: str, value: Any) -> None:

@@ -8,13 +8,12 @@ import asyncio
 from pydantic import BaseModel
 
 import mape
-from mape.utils import LogObserver, init_logger, task_exception
+from mape.utils import LogObserver, init_logger, task_exception, setdefaultattr
 from mape.loop import Loop
 from mape.base_elements import Element
 from mape import operators as ops
 from mape.remote.redis import SubObservable, PubObserver
 from mape.remote.rest import POSTObserver
-from mape.typing import Message
 
 logger = init_logger()
 logger.setLevel(logging.DEBUG)
@@ -63,7 +62,8 @@ async def async_main(car_name, init_speed, elements_dest=None):
             on_next(SpeedItem(value=new_speed))
             on_next({'hazard_lights': True})
         else:
-            on_next(SpeedItem(value=self.last_speed_limit))
+            last_speed_limit = setdefaultattr(self, 'last_speed_limit', self.loop.k.speed_limit)
+            on_next(SpeedItem(value=last_speed_limit))
             on_next({'hazard_lights': False})
 
     safety_policy.safety_speed = 30
@@ -86,7 +86,11 @@ async def async_main(car_name, init_speed, elements_dest=None):
     safety_policy.subscribe(hazard_lights)
 
     analyzer_out = analyzer.pipe(
+        # Only when local state change
+        # Could be removed due is present on safety_policy Plan (but reduce transmission bandwidth)
+        ops.distinct_until_changed(),
         # Only when hazard_lights are ON
+        # Comment to sync car on Emergency ON and OFF
         ops.filter(lambda hazard_lights: hazard_lights is True)
     )
 
@@ -144,9 +148,9 @@ if __name__ == '__main__':
         # "python -m examples.test-coordinated-car Bugatti 120"
         init_kwargs = {'redis_url': 'redis://localhost:6379'}
     else:
-        # 1. "python -m examples.test-coordinated-car Bugatti 380 0.0.0.0:6060 0.0.0.0:6061/Panda 0.0.0.0:6062/Countach"
-        # 2. "python -m examples.test-coordinated-car Panda 120 0.0.0.0:6061 0.0.0.0:6060/Bugatti 0.0.0.0:6062/Countach"
-        # 3. "python -m examples.test-coordinated-car Countach 260 0.0.0.0:6062 0.0.0.0:6060/Bugatti 0.0.0.0:6061/Panda"
+        # 1. "python -m examples.coordinated-car Bugatti 380 0.0.0.0:6060 0.0.0.0:6061/Panda 0.0.0.0:6062/Countach"
+        # 2. "python -m examples.coordinated-car Panda 120 0.0.0.0:6061 0.0.0.0:6060/Bugatti 0.0.0.0:6062/Countach"
+        # 3. "python -m examples.coordinated-car Countach 260 0.0.0.0:6062 0.0.0.0:6060/Bugatti 0.0.0.0:6061/Panda"
         init_kwargs = {'rest_host_port': sys.argv[3]}
         run_kwargs.update({'elements_dest': sys.argv[4:]})
 
