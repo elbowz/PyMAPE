@@ -161,3 +161,12 @@ async def aio_call(func):
         return await func
     else:
         return func
+
+
+def setdefaultattr(obj, name, value):
+    """ As Dict.setdefault but for object """
+    try:
+        return getattr(obj, name)
+    except AttributeError:
+        setattr(obj, name, value)
+    return value
