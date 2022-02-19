@@ -11,7 +11,7 @@ from mape.base_elements import UID, Element
 from mape.utils import log_task_exception
 from mape.typing import Message, MapeLoop, OpsChain
 
-from .fixitures import VirtualRoom
+from .fixtures import VirtualRoom
 
 logger = logging.getLogger(__name__)
 

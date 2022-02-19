@@ -12,7 +12,7 @@ from mape import Loop, operators as ops
 from mape.base_elements import UID, Element
 from mape.typing import Message, MapeLoop, OpsChain
 
-from .fixitures import VirtualRoom
+from .fixtures import VirtualRoom
 from .alarm import AnalyzeAVG
 
 logger = logging.getLogger(__name__)

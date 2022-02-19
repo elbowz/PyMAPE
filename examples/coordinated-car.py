@@ -28,7 +28,7 @@ class SpeedItem(BaseModel):
 
 
 async def async_main(car_name, init_speed, elements_dest=None):
-    from loops.fixitures import VirtualCar
+    from examples.fixtures import VirtualCar
 
     # Managed elements
     car = VirtualCar(car_name, init_speed)

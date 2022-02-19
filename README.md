@@ -54,6 +54,6 @@
 ## CLI
 * `sudo docker run --name mape-redis -p 6379:6379 -v $(pwd)/docker/redis:/usr/local/etc/redis --rm redis redis-server /usr/local/etc/redis/redis.conf`
 * `CONFIG SET notify-keyspace-events KA` (https://redis.io/topics/notifications)
-* `python -m examples.test-coordinated-car Bugatti 120`
+* `python -m examples.coordinated-car Bugatti 120`
 * `curl -X POST -H "Content-Type: text/plain" --data "this is raw data" http://localhost:6060/loops/{loop_uid}/element/{element_uid}`
 * `pyenv activate venv-3.8.12`

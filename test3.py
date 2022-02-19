@@ -20,7 +20,7 @@ logging.getLogger('mape').setLevel(logging.DEBUG)
 
 
 async def async_main(*args, **kwargs):
-    from loops.fixitures import VirtualRoom
+    from loops.fixtures import VirtualRoom
     from loops import thermostats, air_quality, alarm
 
     # Managed elements
