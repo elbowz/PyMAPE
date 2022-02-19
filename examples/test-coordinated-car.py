@@ -8,7 +8,7 @@ import asyncio
 from pydantic import BaseModel
 
 import mape
-from mape.utils import LogObserver, init_logger
+from mape.utils import LogObserver, init_logger, task_exception
 from mape.loop import Loop
 from mape.base_elements import Element
 from mape import operators as ops
@@ -111,29 +111,28 @@ async def async_main(car_name, init_speed, elements_dest=None):
     logger.info(f"{emergency_detect} element started")
     emergency_detect.start()
 
-    # Manage shortcuts/hotkeys
-    asyncio.create_task(catch_single_key_press(car))
+    # Stdin/key bindings setup for user input
+    prompt_setup(car)
 
 
-async def catch_single_key_press(car):
-    from prompt_toolkit.input import create_input
-    from prompt_toolkit.keys import Keys
+def prompt_setup(car):
+    from examples.utils import handle_prompt
 
-    done = asyncio.Event()
-    input = create_input()
+    def prompt_handler(value):
+        if value in ['exit', 'close', 'stop']:
+            mape.stop()
 
-    def keys_ready():
-        for key_press in input.read_keys():
-            if key_press.key == '1':
-                car.emergency_detect = True
-            elif key_press.key == '0':
-                car.emergency_detect = False
-            elif key_press.key == Keys.ControlC:
-                done.set()
+    def key_emergency(key):
+        if key == 'f1':
+            car.emergency_detect = True
+        elif key == 'f2':
+            car.emergency_detect = False
 
-    with input.raw_mode():
-        with input.attach(keys_ready):
-            await done.wait()
+    def key_close_handler(key):
+        mape.stop()
+
+    key_bindings_handlers = {'f1': key_emergency, 'f2': key_emergency, 'c-c': key_close_handler}
+    asyncio.create_task(task_exception(handle_prompt(prompt_handler, key_bindings_handlers)))
 
 
 if __name__ == '__main__':
