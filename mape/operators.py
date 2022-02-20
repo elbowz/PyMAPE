@@ -8,8 +8,9 @@ from rx.core import Observer, Observable
 from rx.disposable import Disposable, CompositeDisposable
 from rx.operators import *
 
+import mape
 from .base_elements import Element
-from .typing import Mapper, OpsChain, DestMapper
+from .typing import Mapper, OpsChain, DestMapper, Message
 
 MapeElement = Union[Subject, Element]
 
@@ -56,15 +57,16 @@ def group_and_pipe(operators: OpsChain, key_mapper: Mapper = None):
 reverse_proxy = group_and_pipe
 
 
-# TODO: Implement a default dest_mapper (eg. based on dst, if None src)
-def gateway(dest_mapper: DestMapper):
+def _gateway_dest_mapper(item: Message):
+    return mape.app[item.dst]
+
+
+def gateway(dest_mapper: DestMapper = None):
+    dest_mapper = dest_mapper or _gateway_dest_mapper
 
     def _gateway(source):
         def subscribe(observer, scheduler=None):
             from collections.abc import Iterable
-
-            if isinstance(1, Iterable):
-                print("ciao")
 
             def on_next(item):
                 dests = dest_mapper(item)
@@ -91,3 +93,7 @@ def gateway(dest_mapper: DestMapper):
         return rx.create(subscribe)
 
     return _gateway
+
+
+router = gateway
+
