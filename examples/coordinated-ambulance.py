@@ -1,19 +1,15 @@
 #!/usr/bin/env python3
 
-import random
-import sys
 import logging
-import asyncio
-
-from pydantic import BaseModel
 
 import mape
 from mape.utils import LogObserver, init_logger, task_exception, setdefaultattr
 from mape.loop import Loop
 from mape.base_elements import Element
 from mape import operators as ops
-from mape.remote.redis import SubObservable, PubObserver
-from mape.remote.rest import POSTObserver
+from mape.remote.redis import SubObservable
+
+from examples.coordinated_common import prompt_setup
 
 logger = init_logger()
 logger.setLevel(logging.DEBUG)
@@ -27,20 +23,16 @@ async def async_main(name, init_speed):
 
     # Managed elements
     ambulance = VirtualAmbulance(name, speed=init_speed)
+    # Stdin/key bindings setup for user input
+    prompt_setup(ambulance)
 
     """ MAPE Loop and elements definition """
     loop = Loop(uid='ambulance_emergency')
 
-    @loop.monitor(param_self=True)
-    def emergency_detect(item, on_next, self):
-        if 'speed' in item:
-            # Local volatile knowledge
-            self.loop.k.current_speed = item['speed']
-        elif 'speed_limit' in item:
-            self.loop.k.speed_limit = item['speed_limit']
-        elif 'emergency_detect' in item:
-            on_next(item['emergency_detect'])
+    # External monitor element
+    from examples.coordinated_common import emergency_detect_cls
 
+    emergency_detect = emergency_detect_cls(loop=loop)
     ambulance.set_callback('speed', emergency_detect)
     ambulance.set_callback('speed_limit', emergency_detect)
     ambulance.set_callback('emergency_detect', emergency_detect)
@@ -84,29 +76,6 @@ async def async_main(name, init_speed):
     # Starting monitor...
     logger.info(f"{emergency_detect} element started")
     emergency_detect.start()
-
-    # Stdin/key bindings setup for user input
-    prompt_setup(ambulance)
-
-
-def prompt_setup(vehicle):
-    from examples.utils import handle_prompt
-
-    def prompt_handler(value):
-        if value in ['exit', 'close', 'stop']:
-            mape.stop()
-
-    def key_emergency(key):
-        if key == 'f1':
-            vehicle.emergency_detect = True
-        elif key == 'f2':
-            vehicle.emergency_detect = False
-
-    def key_close_handler(key):
-        mape.stop()
-
-    key_bindings_handlers = {'f1': key_emergency, 'f2': key_emergency, 'c-c': key_close_handler}
-    asyncio.create_task(task_exception(handle_prompt(prompt_handler, key_bindings_handlers)))
 
 
 if __name__ == '__main__':

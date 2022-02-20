@@ -109,5 +109,5 @@ class VirtualAmbulance(VirtualCar):
 
     @siren.setter
     def siren(self, state: bool):
-        logger.info(f"{self.__class__.__name__} {self.uid} siren: {state}")
+        logger.info(f"{self.__class__.__name__} {self.uid} siren: {'ON' if state else 'OFF'}")
         self._siren = state
