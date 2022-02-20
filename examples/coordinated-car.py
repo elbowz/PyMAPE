@@ -26,7 +26,7 @@ class SpeedItem(BaseModel):
     value: int = 0
 
 
-async def async_main(car_name, init_speed, elements_dest=None):
+async def async_main(car_name, init_speed, ambulance_dest=None, cars_dst=None):
     from examples.fixtures import VirtualCar
 
     # Managed elements
@@ -54,8 +54,8 @@ async def async_main(car_name, init_speed, elements_dest=None):
         on_next(emergency_detect)
 
     @loop.plan(ops_in=ops.distinct_until_changed(), param_self=True)
-    async def safety_policy(safety_state, on_next, self):
-        if safety_state is True:
+    async def safety_policy(safety, on_next, self):
+        if safety is True:
             self.last_speed_limit = self.loop.k.speed_limit
             new_speed = min(self.last_speed_limit, self.safety_speed)
 
@@ -85,6 +85,12 @@ async def async_main(car_name, init_speed, elements_dest=None):
     safety_policy.subscribe(speed_limit)
     safety_policy.subscribe(hazard_lights)
 
+    emergency_detect_out = emergency_detect.pipe(
+        # Only when local state change
+        ops.distinct_until_changed(),
+        ops.filter(lambda emergency: emergency is True)
+    )
+
     analyzer_out = analyzer.pipe(
         # Only when local state change
         # Could be removed due is present on safety_policy Plan (but reduce transmission bandwidth)
@@ -96,7 +102,13 @@ async def async_main(car_name, init_speed, elements_dest=None):
 
     """ MAPE Elements REMOTE connection """
 
-    if not elements_dest:
+    if not ambulance_dest:
+        emergency_detect_out.subscribe(PubObserver(emergency_detect.path))
+    else:
+        ambulance_emergency_policy = POSTObserver(f"http://{ambulance_dest}", 'ambulance_emergency.emergency_policy')
+        emergency_detect_out.subscribe(ambulance_emergency_policy)
+
+    if not cars_dst:
         # Listen/Subscribe for others cars analyzer output
         # notes: for clarity can be used "safety_policy.port_in" and "analyzer.uid"
         SubObservable(f"car_*_safety.{analyzer}").subscribe(safety_policy)
@@ -105,7 +117,7 @@ async def async_main(car_name, init_speed, elements_dest=None):
         analyzer_out.subscribe(PubObserver(analyzer.path))
     else:
         # Send stream to elements through a POST request
-        for host in elements_dest:
+        for host in cars_dst:
             host, car_name = host.split('/')
             dest_safety_policy = POSTObserver(f"http://{host}", f"car_{car_name}_safety.{safety_policy}")
 
@@ -119,7 +131,7 @@ async def async_main(car_name, init_speed, elements_dest=None):
     prompt_setup(car)
 
 
-def prompt_setup(car):
+def prompt_setup(vehicle):
     from examples.utils import handle_prompt
 
     def prompt_handler(value):
@@ -128,9 +140,9 @@ def prompt_setup(car):
 
     def key_emergency(key):
         if key == 'f1':
-            car.emergency_detect = True
+            vehicle.emergency_detect = True
         elif key == 'f2':
-            car.emergency_detect = False
+            vehicle.emergency_detect = False
 
     def key_close_handler(key):
         mape.stop()
@@ -142,17 +154,32 @@ def prompt_setup(car):
 if __name__ == '__main__':
     logger.debug('START...')
 
-    run_kwargs = {'car_name': sys.argv[1], 'init_speed': int(sys.argv[2])}
+    # CLI EXAMPLES
+    # Redis:
+    # * python -m examples.coordinated-car --name Veyron --speed 380
+    # REST:
+    # 1. python -m examples.coordinated-car --name Veyron --speed 380 --web-server 0.0.0.0:6060 --ambulance 0.0.0.0:6000 --cars 0.0.0.0:6061/Countach 0.0.0.0:6062/Panda
+    # 2. python -m examples.coordinated-car --name Countach --speed 240 --web-server 0.0.0.0:6061 --ambulance 0.0.0.0:6000 --cars 0.0.0.0:6060/Veyron 0.0.0.0:6062/Panda
+    # 3. python -m examples.coordinated-car --name Panda --speed 90 --web-server 0.0.0.0:6062 --ambulance 0.0.0.0:6000 --cars 0.0.0.0:6060/Veyron 0.0.0.0:6061/Countach
 
-    if len(sys.argv) <= 3:
-        # "python -m examples.test-coordinated-car Bugatti 120"
-        init_kwargs = {'redis_url': 'redis://localhost:6379'}
-    else:
-        # 1. "python -m examples.coordinated-car Bugatti 380 0.0.0.0:6060 0.0.0.0:6061/Panda 0.0.0.0:6062/Countach"
-        # 2. "python -m examples.coordinated-car Panda 120 0.0.0.0:6061 0.0.0.0:6060/Bugatti 0.0.0.0:6062/Countach"
-        # 3. "python -m examples.coordinated-car Countach 260 0.0.0.0:6062 0.0.0.0:6060/Bugatti 0.0.0.0:6061/Panda"
-        init_kwargs = {'rest_host_port': sys.argv[3]}
-        run_kwargs.update({'elements_dest': sys.argv[4:]})
+    import argparse
+    parser = argparse.ArgumentParser(description='MAPE Loop')
+    parser.add_argument('-n', '--name', type=str, metavar='CAR_NAME', required=True)
+    parser.add_argument('-s', '--speed', type=int, metavar='CAR_SPEED', default=80)
+    parser.add_argument('-w', '--web-server', type=str, metavar='HOST_PORT')
+    parser.add_argument('-a', '--ambulance', type=str, metavar='HOST_PORT')
+    parser.add_argument('-c', '--cars', type=str, nargs='*', metavar='HOST_PORT/CAR_NAME')
+    args = parser.parse_args()
+
+    init_kwargs = {'redis_url': 'redis://localhost:6379'}
+    init_kwargs = {**init_kwargs, 'rest_host_port': args.web_server} if args.web_server else init_kwargs
+
+    run_kwargs = {
+        'car_name': args.name,
+        'init_speed': args.speed,
+        'ambulance_dest': args.ambulance,
+        'cars_dst': args.cars
+    }
 
     mape.init(debug=False, **init_kwargs)
     mape.run(entrypoint=async_main(**run_kwargs))
