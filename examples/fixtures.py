@@ -18,14 +18,14 @@ class VirtualCar:
                  hazard_lights: bool = False,
                  emergency_detect: bool = False
                  ) -> None:
+        logger.info(f"Init {self.__class__.__name__} {uid}...")
+
         self.uid: str = uid
         self.speed: int = speed
         self.speed_limit: int = speed_limit or speed + 20
         self.hazard_lights: bool = hazard_lights
         self.emergency_detect: bool = emergency_detect
         self._callbacks: dict = {}
-
-        logger.info(f"Init car {uid}...")
 
         self._task_service_loop = asyncio.create_task(self._service_loop())
 
@@ -66,7 +66,7 @@ class VirtualCar:
 
     @emergency_detect.setter
     def emergency_detect(self, state: bool):
-        logger.info(f"Car {self.uid} emergency {'ON' if state else 'OFF'}")
+        logger.info(f"{self.__class__.__name__} {self.uid} emergency {'ON' if state else 'OFF'}")
         self._emergency_detect = state
 
     @property
@@ -75,7 +75,7 @@ class VirtualCar:
 
     @hazard_lights.setter
     def hazard_lights(self, state: bool):
-        logger.info(f"Car {self.uid} hazard lights {'ON' if state else 'OFF'}")
+        logger.info(f"{self.__class__.__name__} {self.uid} hazard lights {'ON' if state else 'OFF'}")
         self._hazard_lights = state
 
     @property
@@ -84,7 +84,7 @@ class VirtualCar:
 
     @speed.setter
     def speed(self, speed: int):
-        logger.info(f"Car {self.uid} speed: {speed} Km/h")
+        logger.info(f"{self.__class__.__name__} {self.uid} speed: {speed} Km/h")
         self._speed = speed
 
     @property
@@ -93,5 +93,21 @@ class VirtualCar:
 
     @speed_limit.setter
     def speed_limit(self, speed: int):
-        logger.info(f"Car {self.uid} speed limit set: {speed} Km/h")
+        logger.info(f"{self.__class__.__name__} {self.uid} speed limit set: {speed} Km/h")
         self._speed_limit = speed
+
+
+class VirtualAmbulance(VirtualCar):
+    def __init__(self, uid='', speed: int = 50, speed_limit: int | None = None, hazard_lights: bool = False,
+                 emergency_detect: bool = False, siren: bool = False) -> None:
+        super().__init__(uid, speed, speed_limit, hazard_lights, emergency_detect)
+        self.siren = siren
+
+    @property
+    def siren(self):
+        return self._siren
+
+    @siren.setter
+    def siren(self, state: bool):
+        logger.info(f"{self.__class__.__name__} {self.uid} siren: {state}")
+        self._siren = state
