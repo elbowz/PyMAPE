@@ -34,12 +34,14 @@ class VirtualCar:
             # if numpy.random.choice((True, False), p=[0.1, 0.9]):
             #     self.hazard_lights = True
 
-            delta_speed = max(random.randint(0, 3), int(abs(self.speed_limit - self.speed) / 4))
+            delta_speed = max(random.randint(0, 3), int(abs(self.speed_limit - self._speed) / 4))
 
-            if self.speed >= self.speed_limit:
-                self.speed -= delta_speed
+            if self._speed >= self.speed_limit:
+                self._speed -= delta_speed
             else:
-                self.speed += delta_speed
+                self._speed += delta_speed
+
+            self.speed = max(0, self.speed)
 
             await asyncio.sleep(random.uniform(2, 4))
 
