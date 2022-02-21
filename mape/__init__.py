@@ -7,11 +7,11 @@ import aioredis
 import warnings
 from contextlib import suppress
 from fastapi import FastAPI
+from typing import Dict
 
-from typing import Any, Callable, Optional, Union, Awaitable, Coroutine, NamedTuple
 from rx.scheduler.eventloop import AsyncIOScheduler
 
-import mape
+from . import config as mape_config
 from .application import App
 from .base_elements import *
 from .loop import Loop
@@ -33,6 +33,7 @@ redis: Optional[aioredis.Redis] = None
 uvicorn_webserver: Optional[UvicornDaemon] = None
 fastapi: Optional[FastAPI] = None
 app: Optional[App] = None
+config: Optional[Dict] = None
 
 
 def setup_logger():
@@ -83,8 +84,22 @@ def _start_web_server(host_port: str, loop):
         logger.info('Webserver started: No more endpoint can be added since now!')
 
 
-def init(debug=False, asyncio_loop=None, redis_url=None, rest_host_port=None):
-    global aio_loop, rx_scheduler, redis, fastapi, app
+def init(debug=False, asyncio_loop=None, redis_url=None, rest_host_port=None, config_file=None):
+    global config, aio_loop, rx_scheduler, redis, fastapi, app
+
+    config_file = config_file or mape_config.default_config_file
+
+    if config := mape_config.load(config_file):
+        logger.info(f"{config_file} loaded")
+    else:
+        logger.info(f"{config_file} not found, using default config")
+        config = mape_config.default
+
+    mape_config.set('debug', debug)
+    mape_config.set('redis.url', redis_url)
+    mape_config.set('rest.host_port', rest_host_port)
+
+    logger.debug(f"Config: {config}")
 
     # loop = asyncio.new_event_loop()
     # asyncio.set_event_loop(loop)
@@ -107,16 +122,17 @@ def init(debug=False, asyncio_loop=None, redis_url=None, rest_host_port=None):
 
     rx_scheduler = rx_scheduler or AsyncIOScheduler(aio_loop)
 
-    if redis_url:
+    if mape_config.get('redis.url'):
         redis = aioredis.from_url(redis_url, db=0)
 
     app = App(redis)
 
-    if rest_host_port:
+    if mape_config.get('rest.host_port'):
         fastapi = rest_setup(app, __version__)
         _start_web_server(rest_host_port, aio_loop)
 
-    set_debug(debug)
+    set_influxdb(mape_config.get('influxdb'))
+    set_debug(mape_config.get('debug'))
 
 
 def run(entrypoint: Union[Callable, Coroutine] = None):

@@ -1,0 +1,57 @@
+debug: yes
+
+redis:
+    url: localhost
+    internal: yes
+
+rest:
+    host_port: 0.0.0.0:6060
+
+influxdb:
+    url: http://localhost:8086
+    username: user
+    password: qwerty
+    org: univaq
+    bucket: mape
+    token: CAUow6RTwUr5__6YE4MRCAyvxEIcStWcxHZD88d0E5yqbvNjziJ-e0x6BnEWTammct6qzHsak8-n7PKMnoMTaA==
+    internal: yes
+    debug: no
+
+#list_example:
+#    - A
+#    - B
+#    - C
+#
+#list_example2: [A, B, C]
+#
+#block_sequence:
+#    - name: PyYAML
+#      status: 4
+#      license: MIT
+#      language: Python
+#    - name: PySyck
+#      status: 5
+#      license: BSD
+#      language: Python
+#
+#aliases:
+#    left hand: &A
+#      name: The Bastard Sword of Eowyn
+#      weight: 30
+#    right hand: *A
+#
+#scalars:
+#    plain: Scroll of Remove Curse
+#    single-quoted: 'EASY_KNOW'
+#    double-quoted: "?"
+#    literal: |    # Borrowed from http://www.kersbergen.com/flump/religion.html
+#      by hjw              ___
+#         __              /.-.\
+#        /  )_____________\\  Y
+#       /_ /=== == === === =\ _\_
+#      ( /)=== == === === == Y   \
+#       `-------------------(  o  )
+#                            \___/
+#    folded: >
+#      It removes all ordinary curses from all equipped items.
+#      Heavy or permanent curses are unaffected.
