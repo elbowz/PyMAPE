@@ -49,7 +49,10 @@ class VirtualCar:
         self._task_service_loop.cancel()
 
     def set_callback(self, name: str, callback: Callable, init=True):
-        self._callbacks[name] = callback
+        if name not in self._callbacks:
+            self._callbacks[name] = [callback]
+        else:
+            self._callbacks[name].append(callback)
 
         if init and (value := getattr(self, name, None)) is not None:
             callback({name: value})
@@ -59,8 +62,9 @@ class VirtualCar:
 
         super().__setattr__(name, value)
 
-        if hasattr(self, '_callbacks') and (callback := self._callbacks.get(name, None)):
-            callback({name: value})
+        if hasattr(self, '_callbacks') and (callbacks := self._callbacks.get(name, None)):
+            for callback in callbacks:
+                callback({name: value})
 
     @property
     def emergency_detect(self):
