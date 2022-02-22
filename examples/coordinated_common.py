@@ -4,7 +4,8 @@ import asyncio
 
 import mape
 from mape.utils import task_exception
-from mape.base_elements import to_monitor_cls
+from mape.base_elements import to_monitor_cls, to_analyze_cls
+from mape.typing import Message
 
 
 @to_monitor_cls(default_uid='emergency_detect', param_self=True)
@@ -16,6 +17,16 @@ def emergency_detect_cls(item, on_next, self):
         self.loop.k.speed_limit = item['speed_limit']
     elif 'emergency_detect' in item:
         on_next(item['emergency_detect'])
+
+
+# Analyze (instead Monitor) because start when subscribe
+@to_analyze_cls(default_uid='push_to_influx', param_self=True)
+def push_to_influx_cls(item: dict, on_next, self):
+
+    for key, value in item.items():
+        msg = Message.create(value=value, src=self)
+        msg.type = key
+        on_next(msg)
 
 
 def prompt_setup(vehicle):

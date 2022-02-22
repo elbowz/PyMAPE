@@ -1,0 +1,9 @@
+influxdb:
+    url: http://localhost:8086
+    username: user
+    password: qwerty
+    org: univaq
+    bucket: mape
+    token: CAUow6RTwUr5__6YE4MRCAyvxEIcStWcxHZD88d0E5yqbvNjziJ-e0x6BnEWTammct6qzHsak8-n7PKMnoMTaA==
+    internal: yes
+    debug: false

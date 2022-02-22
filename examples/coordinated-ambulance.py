@@ -8,6 +8,7 @@ from mape.loop import Loop
 from mape.base_elements import Element
 from mape import operators as ops
 from mape.remote.redis import SubObservable
+from mape.remote.influxdb import InfluxObserver
 
 from examples.coordinated_common import prompt_setup
 
@@ -67,6 +68,22 @@ async def async_main(name, init_speed):
     emergency_detect.subscribe(emergency_policy)
     emergency_policy.subscribe(emergency_exec)
 
+    # Push monitored state to InfluxDB
+    emergency_detect.subscribe(
+        # All args are optional (more info see InfluxObserver source)
+        InfluxObserver(
+            measurement='coordinated-ambulance',
+            tags=('name', name),
+            fields_mapper=lambda item: ('emergency', item)
+        )
+    )
+
+    # Service monitor for monitor speed
+    from examples.coordinated_common import push_to_influx_cls
+    push_to_influx = push_to_influx_cls(loop=loop)
+    push_to_influx.subscribe(InfluxObserver())
+    ambulance.set_callback('speed', push_to_influx)
+
     """ MAPE Elements REMOTE connection """
 
     # Listen/Subscribe for others cars emergency_detect output
@@ -94,6 +111,7 @@ if __name__ == '__main__':
 
     init_kwargs = {'redis_url': 'redis://localhost:6379'}
     init_kwargs = {**init_kwargs, 'rest_host_port': args.web_server} if args.web_server else init_kwargs
+    init_kwargs = {**init_kwargs, 'config_file': 'examples/coordinated.yml'}
 
     mape.init(debug=False, **init_kwargs)
     mape.run(entrypoint=async_main(args.name, init_speed=args.speed))

@@ -1,0 +1,2 @@
+/docker/influxdb/conf/*
+/docker/influxdb/data/*

@@ -15,6 +15,7 @@ from mape import operators as ops
 from mape.remote.redis import SubObservable, PubObserver
 from mape.remote.rest import POSTObserver
 from mape.typing import Message
+from mape.remote.influxdb import InfluxObserver
 
 from examples.coordinated_common import prompt_setup
 
@@ -107,6 +108,15 @@ async def async_main(car_name, init_speed, ambulance_dest=None, cars_dst=None):
     safety_policy.subscribe(speed_limit)
     safety_policy.subscribe(hazard_lights)
 
+    # Service monitor for monitor speed
+    from examples.coordinated_common import push_to_influx_cls
+
+    push_to_influx = push_to_influx_cls(loop=loop)
+    push_to_influx.subscribe(InfluxObserver(fields_mapper=lambda item: (item.type, item.value)))
+    car.set_callback('speed', push_to_influx)
+    car.set_callback('emergency_detect', push_to_influx)
+    car.set_callback('hazard_lights', push_to_influx)
+
     emergency_detect_out = emergency_detect.pipe(
         # Only when local state change
         ops.distinct_until_changed(),
@@ -170,6 +180,7 @@ if __name__ == '__main__':
 
     init_kwargs = {'redis_url': 'redis://localhost:6379'}
     init_kwargs = {**init_kwargs, 'rest_host_port': args.web_server} if args.web_server else init_kwargs
+    init_kwargs = {**init_kwargs, 'config_file': 'examples/coordinated.yml'}
 
     run_kwargs = {
         'car_name': args.name,

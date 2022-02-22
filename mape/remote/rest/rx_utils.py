@@ -29,7 +29,6 @@ def _element_path2url_path(element_path):
 
 
 class POSTObserver(Observer):
-
     def __init__(self,
                  base_url: str,
                  path: str,
