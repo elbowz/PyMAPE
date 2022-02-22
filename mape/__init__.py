@@ -17,13 +17,14 @@ from .base_elements import *
 from .loop import Loop
 # from .operators import *
 from .remote.rest import UvicornDaemon, setup as rest_setup
+from .remote.influxdb import set_config as set_influxdb
 from .utils import init_logger, task_exception
 
 # Please make sure the version here remains the same as in project.cfg
 __version__ = '0.0.1b'
 
 # Disable logging until user use logging.basicConfig()
-# TODO: remove logger inizialization
+# TODO: remove logger initialization
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
@@ -86,6 +87,8 @@ def _start_web_server(host_port: str, loop):
 
 def init(debug=False, asyncio_loop=None, redis_url=None, rest_host_port=None, config_file=None):
     global config, aio_loop, rx_scheduler, redis, fastapi, app
+
+    logging.getLogger(__name__).setLevel(logging.DEBUG if debug else logging.WARNING)
 
     config_file = config_file or mape_config.default_config_file
 

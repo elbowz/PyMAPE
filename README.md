@@ -50,9 +50,25 @@
 * Add subscribe_handler* to knowledge, also and mainly declined to key new/change/delete...
 * Autostart all unstarted Element on run
 ~~* move Unvicron start in init~~
+* add config file for web_server, redis, influxdb (token, org)
+~~* inject "src_host" in Message when receive it (FastAPI) - https://stackoverflow.com/questions/60098005/fastapi-starlette-get-client-real-ip~~ CANNOT BE DONE, MISSIONG THE SRC_PORT (where client listing)
+* move loop.monitor/analyze/... under loop.add_monitor (or similar)
+* REST OpenAPI documentation (text and other stuff in remote/rest/[api,setup])
 
 ## CLI
 * `sudo docker run --name mape-redis -p 6379:6379 -v $(pwd)/docker/redis:/usr/local/etc/redis --rm redis redis-server /usr/local/etc/redis/redis.conf`
+* `sudo docker run --name mape-influxdb -p 8086:8086 \
+-v $(pwd)/docker/influxdb/data:/var/lib/influxdb2 \
+-v $(pwd)/docker/influxdb/conf:/etc/influxdb2 \
+-e DOCKER_INFLUXDB_INIT_MODE=setup \
+-e DOCKER_INFLUXDB_INIT_USERNAME=user \
+-e DOCKER_INFLUXDB_INIT_PASSWORD=qwerty \
+-e DOCKER_INFLUXDB_INIT_ORG=univaq \
+-e DOCKER_INFLUXDB_INIT_BUCKET=mape \
+-e DOCKER_INFLUXDB_INIT_RETENTION=1w \
+-e DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=CAUow6RTwUr5__6YE4MRCAyvxEIcStWcxHZD88d0E5yqbvNjziJ-e0x6BnEWTammct6qzHsak8-n7PKMnoMTaA== \
+--rm influxdb:2.0`
+* `|> toInt()` - bool cast to int (https://docs.influxdata.com/influxdb/v2.0/reference/syntax/flux/flux-vs-influxql/#cast-booleans-to-integers)
 * `CONFIG SET notify-keyspace-events KA` (https://redis.io/topics/notifications)
 * `curl -X POST -H "Content-Type: text/plain" --data "this is raw data" http://localhost:6060/loops/{loop_uid}/element/{element_uid}`
 * `cd Projects/SecondLevelDegrees/courses/Thesis/source/playground/ && pyenv activate venv-3.8.12`
