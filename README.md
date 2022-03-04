@@ -14,7 +14,7 @@
 * ~~MapeElement have to manage different kind of item/value:~~
   * ~~MSG: classic msg with: payload/value, from (?!), through (?!), to (?!), timestamp (?!), hops (?!),~~ 
   * ~~METHOD: serialization object method call: method, params~~
-~~* MapeLoop @decorator accept coroutine~~
+  ~~* MapeLoop @decorator accept coroutine~~
 * ~~MapeLoop @decorator: @toclass, @instance, @register ?!~~
 * Set default scheduler for pipe, subscribe, start, etc...
 * Refactor mape.init() moving on top and add a mape.run() ?!
@@ -30,15 +30,17 @@
   ~~* as shared memory (https://github.com/plataux/purse)~~
   ~~* pub/sub or stream for distributed communication~~
   * asyncio event shared?! (https://docs.python.org/3/library/asyncio-sync.html#event)
-  ~~* decorator for event publish/subscribe~~ 
+    ~~* decorator for event publish/subscribe~~ 
     * namespaced in loop.uid or global
   * https://stackoverflow.com/questions/28785383/how-to-disable-persistence-with-redis
   * embed redis in python (https://pypi.org/project/redislite/, https://github.com/chekart/rediserver/blob/master/rediserver/test/embedded.py)
 * SubObservable, PubObserver
-  * REST 
+  * ~~REST~~
   * gRPC
-  ~~* Redis~~
-* Implementare esempio per il coordinated e per l'information sharing (magari entrambi in due modi diverse: CallMethod / link the port-out of Element with a filter)
+  * ~~Redis~~
+* Implementare esempio per il coordinated e per l'information sharing (magari entrambi in due modi diversi: CallMethod / link the port-out of Element with a filter)
+	* CallMethod
+	* subscribe_handler 	
 * Add __slots__ to class where can be useful (App, Loop, Element) (https://stackoverflow.com/questions/472000/usage-of-slots)
 * ~~Add level class (aggregate loop)~~
 ~~* Add class Knowledge, an object compose loop, app, level~~
@@ -50,10 +52,12 @@
 * Add subscribe_handler* to knowledge, also and mainly declined to key new/change/delete...
 * Autostart all unstarted Element on run
 ~~* move Unvicron start in init~~
-* add config file for web_server, redis, influxdb (token, org)
-~~* inject "src_host" in Message when receive it (FastAPI) - https://stackoverflow.com/questions/60098005/fastapi-starlette-get-client-real-ip~~ CANNOT BE DONE, MISSIONG THE SRC_PORT (where client listing)
+* ~~add config file for web_server, redis, influxdb (token, org)~~
+* ~~inject "src_host" in Message when receive it (FastAPI) - https://stackoverflow.com/questions/60098005/fastapi-starlette-get-client-real-ip~~ CANNOT BE DONE, MISSIONG THE SRC_PORT (where client listing)
 * move loop.monitor/analyze/... under loop.add_monitor (or similar)
 * REST OpenAPI documentation (text and other stuff in remote/rest/[api,setup])
+* Monitor, Analyze, Plan, Execute should have a param to change the startOnSub, startOnInit
+* Add waitForLoop to sync (Data hydratation) loop through redis. Should be used before connect mape element e so use mape.loop.element.uid...take inspiration from redislock (BAH?!)
 
 ## CLI
 * `sudo docker run --name mape-redis -p 6379:6379 -v $(pwd)/docker/redis:/usr/local/etc/redis --rm redis redis-server /usr/local/etc/redis/redis.conf`
@@ -62,7 +66,7 @@
 -v $(pwd)/docker/influxdb/conf:/etc/influxdb2 \
 -e DOCKER_INFLUXDB_INIT_MODE=setup \
 -e DOCKER_INFLUXDB_INIT_USERNAME=user \
--e DOCKER_INFLUXDB_INIT_PASSWORD=qwerty \
+-e DOCKER_INFLUXDB_INIT_PASSWORD=qwerty123456 \
 -e DOCKER_INFLUXDB_INIT_ORG=univaq \
 -e DOCKER_INFLUXDB_INIT_BUCKET=mape \
 -e DOCKER_INFLUXDB_INIT_RETENTION=1w \

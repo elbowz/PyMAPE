@@ -22,91 +22,6 @@ from .utils import init_logger, LogObserver, GenericObject, caller_module_name, 
 logger = logging.getLogger(__name__)
 
 
-class BaseMapeElementTODELETE:
-    """
-    Encapsulate a ConnectableObservable like
-    It has multiple source/in ports Subject (ie external write/read on stream)
-    and multiple sink/out ports Observable (ie external read on stream)
-    """
-
-    def __init__(self) -> None:
-        self._scheduler = None
-
-        # Input port
-        self._source: Subject = Subject()
-        self._source_dispose = self.start(self._source)
-
-        # Default sink "do nothing"
-        self._sink: Observer = Observer()
-        # Output port
-        self._observable = rx.create(self._on_subscribe).pipe(
-            # output transformation
-            # ops.do(LogObserver('out')),
-            ops.share()
-        )
-
-    """ SOURCE """
-
-    def start(self, source: Subject = None):
-        source = source or self._source
-
-        return source.pipe(
-            # output transformation
-            ops.do(LogObserver('in')),
-        ).subscribe(
-            on_next=self._on_next,
-            on_error=self._on_error,
-            on_completed=self._on_completed
-        )
-
-    def stop(self) -> None:
-        logger.debug('stop')
-        self._source_dispose.dispose()
-
-    def port(self, port='default'):
-        return self._source
-
-    __call__ = port
-
-    def __getitem__(self, key='default'):
-        return self.port(key)
-
-    def _on_next(self, value: Any) -> None:
-        self._sink.on_next(value)
-
-    def _on_error(self, error: Exception) -> None:
-        logger.error(error)
-        # self._sink.on_error(error)
-
-    def _on_completed(self) -> None:
-        logger.warning('stream completed')
-        # self._sink.on_completed()
-
-    """ SINK """
-
-    def subscribe(self, *args, **kwargs):
-        # TODO: DEFINE MULTIPORT?!
-        if 'port' in kwargs:
-            print(kwargs['port'])
-            del kwargs['port']
-        return self._observable.subscribe(*args, **kwargs)
-
-    def pipe(self, *operators: Callable[['Observable'], Any]) -> Any:
-        return self._observable.pipe(*operators)
-
-    def _on_subscribe(self, observer, scheduler):
-        self._sink = observer
-        self._scheduler = scheduler
-
-        self._sink.on_next("Sent on first subscription")
-
-        return Disposable(self.on_unsubscribe)
-
-    def on_unsubscribe(self):
-        """ Only subscriber have disposed/ended the subscription """
-        logger.debug('on_unsubscribe')
-
-
 class UID(Enum):
     RANDOM = None
     DEF = 1
@@ -409,7 +324,7 @@ def to_element_cls(
 
 
 def to_element_cls(func=None, /, *,
-                   element_class=Element,
+                   element_class=Type[Element],
                    default_uid: str | UID = UID.DEF,
                    default_ops_in: Optional[typing.OpsChain] = (),
                    default_ops_out: Optional[typing.OpsChain] = (),

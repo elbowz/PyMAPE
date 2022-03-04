@@ -138,7 +138,7 @@ async def async_main(car_name, init_speed, ambulance_dest=None, cars_dst=None):
 
     if not cars_dst:
         # Listen/Subscribe for others cars analyzer output
-        # notes: for clarity can be used "safety_policy.port_in" and "analyzer.uid"
+        # note: for clarity can be used "safety_policy.port_in" and "analyzer.uid"
         SubObservable(f"car_*_safety.{analyzer}").pipe(
             ops.filter(lambda item: item.src != analyzer.path)
         ).subscribe(analyzer)

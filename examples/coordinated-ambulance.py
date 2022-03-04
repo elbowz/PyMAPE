@@ -34,6 +34,7 @@ async def async_main(name, init_speed):
     from examples.coordinated_common import emergency_detect_cls
 
     emergency_detect = emergency_detect_cls(loop=loop)
+
     ambulance.set_callback('speed', emergency_detect)
     ambulance.set_callback('speed_limit', emergency_detect)
     ambulance.set_callback('emergency_detect', emergency_detect)

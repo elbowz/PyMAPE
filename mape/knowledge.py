@@ -50,7 +50,7 @@ class Knowledge:
     def create_lifoqueue(self, key: str, value_type: Type[T]) -> RedisLifoQueue[T]:
         return RedisLifoQueue(self._redis, self._prefix + key, value_type=value_type)
 
-    def create_redlock(self, key, masters: List[Redis], *args, **kwargs):
+    def create_lock(self, key, masters: List[Redis], *args, **kwargs):
         return Redlock(key, masters, *args, **kwargs)
 
     @property

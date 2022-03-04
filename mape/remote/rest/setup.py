@@ -9,7 +9,11 @@ from .api import api_setup
 fastapi: FastAPI | None = None
 
 description = dedent('''
-        MAPE framework REST API interface
+        MAPE framework RESTfull API interface
+       
+        ## Levels
+        
+        You can **read items**.
         
         ## Loops
         
@@ -24,16 +28,16 @@ description = dedent('''
 
 tags_metadata = [
     {
+        'name': 'levels',
+        'description': 'Operation with levels',
+    },
+    {
         'name': 'loops',
-        'description': 'Operations with loops.',
+        'description': 'Operations with loops',
     },
     {
         'name': 'elements',
-        'description': 'Manage elements.',
-    },
-    {
-        'name': 'levels',
-        'description': 'Manage levels.',
+        'description': 'Operations with Elements',
     },
 ]
 

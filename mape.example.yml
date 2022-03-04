@@ -1,8 +1,8 @@
 debug: yes
 
 redis:
-    url: localhost
-    internal: yes
+    url: redis://localhost:6379
+    embed: yes
 
 rest:
     host_port: 0.0.0.0:6060
@@ -10,11 +10,11 @@ rest:
 influxdb:
     url: http://localhost:8086
     username: user
-    password: qwerty
+    password: qwerty123456
     org: univaq
     bucket: mape
     token: CAUow6RTwUr5__6YE4MRCAyvxEIcStWcxHZD88d0E5yqbvNjziJ-e0x6BnEWTammct6qzHsak8-n7PKMnoMTaA==
-    internal: yes
+    embed: yes
     debug: no
 
 #list_example:

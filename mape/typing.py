@@ -71,6 +71,7 @@ class CallMethod(Item):
         return f"{self.__class__.__name__}({self.name}, {self.args}, {self.kwargs}, {self.src}, {self.dst}, {self.hops}, {self.timestamp})"
 
 
+# TODO: delete... before check if somewhere is used
 class MapeLoop(ABC):
     __slots__ = ()
     prefix: str = None

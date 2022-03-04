@@ -3,7 +3,6 @@ from __future__ import annotations
 from aioredis import Redis
 from typing import Any, Dict, Type, Union, Tuple, Iterable, List, TypeVar
 
-import mape
 from mape.loop import Loop
 from mape.base_elements import Element
 from mape.level import Level

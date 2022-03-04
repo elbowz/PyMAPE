@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-import asyncio
-import logging
 import signal
 import aioredis
 import warnings
-from contextlib import suppress
 from fastapi import FastAPI
 from typing import Dict
 

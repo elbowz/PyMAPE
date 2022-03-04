@@ -43,23 +43,23 @@ def api_setup(fastapi_app: FastAPI, mape_app: mape.App, deserializer: Callable =
         return mape_app.loops[loop.uid][element_uid]
 
     @fastapi_app.get('/loops', tags=['loops'],
-                     summary='Create an item', response_description='The created item')
+                     summary='Retrive Loops list', response_description='The created item')
     async def get_loops():
         return list(mape_app.loops.keys())
 
     @fastapi_app.get('/loops/{loop_uid}/elements',
-                     tags=['elements'], summary='Create an item', response_description='The created item')
+                     tags=['elements'], summary='Retrive Elements list by Loop', response_description='The created item')
     async def get_elements(loop: common_loop = Depends()):
         return list(loop.elements.keys())
 
     @fastapi_app.get('/levels',
-                     tags=['levels'], summary='Create an item', response_description='The created item')
+                     tags=['levels'], summary='Retrive Levels list', response_description='The created item')
     async def get_levels():
         return list(mape_app.levels.keys())
 
     @fastapi_app.post(element_notify_path,
                       tags=['elements'],
-                      summary='Create an item',
+                      summary='Push stream on Element Port',
                       response_description='The created item')
     async def element_notify(request: Request,
                              element: common_element = Depends(),

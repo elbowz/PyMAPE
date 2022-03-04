@@ -40,7 +40,7 @@ async def async_main(car_name, init_speed, ambulance_dest=None, cars_dst=None):
     """ MAPE Loop and elements definition """
     loop = Loop(uid=f"car_{car_name}_safety")
 
-    # External monitor element
+    # External Monitor element
     from examples.coordinated_common import emergency_detect_cls
 
     emergency_detect = emergency_detect_cls(loop=loop)
@@ -100,12 +100,12 @@ async def async_main(car_name, init_speed, ambulance_dest=None, cars_dst=None):
     )
 
     analyzer_out = analyzer.pipe(
-        # Only when local state change
-        # Could be removed due is present on safety_policy Plan (but reduce transmission bandwidth)
+        # Only when items change
+        # Could be removed since is present on safety_policy Plan (but reduce transmission bandwidth)
         ops.distinct_until_changed(),
         # Only when hazard_lights are ON
         # Comment to sync car on Emergency ON and OFF
-        ops.filter(lambda hazard_lights: hazard_lights is True)
+        ops.filter(lambda emergency_detect: emergency_detect is True)
     )
 
     """ MAPE Elements REMOTE connection """
@@ -118,7 +118,7 @@ async def async_main(car_name, init_speed, ambulance_dest=None, cars_dst=None):
 
     if not cars_dst:
         # Listen/Subscribe for others cars analyzer output
-        # notes: for clarity can be used "safety_policy.port_in" and "analyzer.uid"
+        # note: for clarity can be used "safety_policy.port_in" and "analyzer.uid"
         SubObservable(f"car_*_safety.{analyzer}").subscribe(safety_policy)
 
         # Send/Publish the analyzer output to others cars (for clarity can be used "analyzer.port_out")
