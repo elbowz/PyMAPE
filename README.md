@@ -58,6 +58,7 @@
 * REST OpenAPI documentation (text and other stuff in remote/rest/[api,setup])
 * Monitor, Analyze, Plan, Execute should have a param to change the startOnSub, startOnInit
 * Add waitForLoop to sync (Data hydratation) loop through redis. Should be used before connect mape element e so use mape.loop.element.uid...take inspiration from redislock (BAH?!)
+* Use https://pypi.org/project/decorator/ for define decorator?!
 
 ## CLI
 * `sudo docker run --name mape-redis -p 6379:6379 -v $(pwd)/docker/redis:/usr/local/etc/redis --rm redis redis-server /usr/local/etc/redis/redis.conf`
@@ -76,3 +77,10 @@
 * `CONFIG SET notify-keyspace-events KA` (https://redis.io/topics/notifications)
 * `curl -X POST -H "Content-Type: text/plain" --data "this is raw data" http://localhost:6060/loops/{loop_uid}/element/{element_uid}`
 * `cd Projects/SecondLevelDegrees/courses/Thesis/source/playground/ && pyenv activate venv-3.8.12`
+* 
+```bash
+python3 -m venv venv
+source venv/bin/activate
+python -m pip install -r requirements.txt
+```
+  

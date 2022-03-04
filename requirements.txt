@@ -1,0 +1,11 @@
+aiohttp==3.8.1
+aioredis==2.0.1
+asyncstdlib==3.10.3
+charset-normalizer==2.0.12
+fastapi==0.73.0
+influxdb-client==1.26.0
+prompt-toolkit==3.0.24
+Rx==3.2.0
+uvicorn==0.17.4
+PyYAML==6.0
+purse @ git+https://github.com/plataux/purse.git@32900d5556ad1f03ec06f5f60cea04db5fec6197
