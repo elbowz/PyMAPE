@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import logging
+from copy import deepcopy
+from functools import reduce
 from typing import List
 
 import mape
@@ -22,24 +24,22 @@ logging.getLogger('mape').setLevel(logging.DEBUG)
 
 class AVG(Analyze):
     def __init__(self, loop, window_count=6, uid: str = 'avg') -> None:
-        ops_out_avg = (
+        ops_in_avg = (
             ops.window_with_count(count=window_count),
             ops.flat_map(
                 lambda window: window.pipe(
                     ops.to_list(),
-                    ops.map(self._compute_avg_msg)
+                    ops.map(self._compute_avg_msg),
+                    ops.do_action(lambda item: logger.debug(f"Computed AVG for {item.src}: {item.value}"))
                 )
             )
         )
 
-        super().__init__(loop, uid, ops_out=ops_out_avg)
+        super().__init__(loop, uid, ops_in=ops_in_avg)
 
     @staticmethod
     def _compute_avg_msg(items: List[Message]):
-        from functools import reduce
         items_sum = reduce(lambda acc, item: acc + item.value, items, 0)
-
-        from copy import deepcopy
         avg_msg = deepcopy(items[0])
 
         avg_msg.value = items_sum / len(items)
@@ -51,12 +51,12 @@ async def create_speed_enforcement_loop():
 
     @loop.register(uid='avg')
     class GroupedAVG(AVG):
-        def __init__(self, loop, window_count=6, uid=None) -> None:
+        def __init__(self, loop, window_count=8, uid=None) -> None:
             super().__init__(loop, window_count=window_count, uid=uid)
-            # Update the port_out operators with the group_and_pipe
-            self._p_out.operators = [ops.group_and_pipe(self._p_out.operators)]
+            # Update the port_in operators with the group_and_pipe
+            self._p_in.operators = [ops.group_and_pipe(self._p_in.operators)]
 
-    loop.avg.debug(Element.Debug.OUT)
+    # loop.avg.debug(Element.Debug.OUT)
 
     @loop.plan(ops_out=ops.router())
     def penalty(item, on_next, self):
@@ -95,8 +95,9 @@ async def create_car_loop(name, init_speed):
     def exec(item: Message, on_next):
         car.speed_limit = item.value
 
-    mon.debug(Element.Debug.OUT)
+    # mon.debug(Element.Debug.OUT)
 
+    # Access element by dot notation
     mon.subscribe(mape.app.speed_enforcement.avg)
 
     # Starting monitor...
