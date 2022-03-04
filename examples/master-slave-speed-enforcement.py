@@ -58,7 +58,7 @@ async def create_speed_enforcement_loop():
 
     loop.avg.debug(Element.Debug.OUT)
 
-    @loop.plan(ops_out=ops.router(), param_self=True)
+    @loop.plan(ops_out=ops.router())
     def penalty(item, on_next, self):
         delta_speed = item.value - self.speed_threshold
 
@@ -86,9 +86,7 @@ async def create_car_loop(name, init_speed):
     """ MAPE Loop and elements definition """
     loop = Loop(uid=f"car_{name}")
 
-    @loop.monitor(
-        ops_out=ops.sample(6, scheduler=mape.rx_scheduler),
-        param_self=True)
+    @loop.monitor(ops_out=ops.sample(6, scheduler=mape.rx_scheduler))
     def mon(item, on_next, self):
         if 'speed' in item:
             on_next(Message.create(value=item['speed'], src=self, dst=self.loop.exec))

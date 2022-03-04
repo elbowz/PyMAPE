@@ -50,7 +50,7 @@ def dest_mapper(item):
     return execute_in_loop
 
 
-@loop_master.plan(ops_out=ops.gateway(dest_mapper), param_self=True)
+@loop_master.plan(ops_out=ops.gateway(dest_mapper))
 def p_fan(item, on_next, self):
     if self.target_air_quality > item.value:
         # Set fan speed max to 10
@@ -72,7 +72,7 @@ p_fan.subscribe()
 """ MAPE ELEMENTS DEFINITION """
 
 
-@mape.to_monitor_cls(param_self=True)
+@mape.to_monitor_cls
 async def Monitor(item, on_next, self: Element, something_useful=None):
     """ Simulate polling (ie read on call) """
     air_quality = self.managed_element_room.current_air_quality
@@ -88,8 +88,7 @@ async def Monitor(item, on_next, self: Element, something_useful=None):
 
 
 @mape.to_execute_cls(default_uid='execute_air_quality',
-                     default_ops_in=ops.distinct_until_changed(lambda item: item.value),
-                     param_self=True)
+                     default_ops_in=ops.distinct_until_changed(lambda item: item.value))
 async def Execute(item, on_next, self):
 
     # import asyncstdlib as a

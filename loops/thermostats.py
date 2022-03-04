@@ -63,7 +63,7 @@ class Monitor(mape.base_elements.Monitor):
         logger.debug(f"I'm {self.uid}.test_call_method(), called with {args0}, {args1}, {kwargs0}, {kwargs1}")
 
 
-@mape.to_plan_cls(default_ops_in=ops.debounce(5.0), param_self=True)
+@mape.to_plan_cls(default_ops_in=ops.debounce(5.0))
 def Plan(item, on_next, self):
     # item.value = True if item.value < self.target_temp else False
     item = True if item < self.target_temp else False
@@ -71,8 +71,7 @@ def Plan(item, on_next, self):
 
 
 @mape.to_execute_cls(default_uid=UID.RANDOM,
-                     default_ops_in=ops.distinct_until_changed(),
-                     param_self=True)
+                     default_ops_in=ops.distinct_until_changed())
 async def Execute(item, on_next, self, useful_params=None):
     logger.debug(f"I'm {self.uid}, called with useful_params='{useful_params}'")
     # self.managed_element_room.set_heater(item.value)

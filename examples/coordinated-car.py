@@ -52,7 +52,7 @@ async def async_main(car_name, init_speed, ambulance_dest=None, cars_dst=None):
     def analyzer(emergency_detect: bool, on_next):
         on_next(emergency_detect)
 
-    @loop.plan(ops_in=ops.distinct_until_changed(), param_self=True)
+    @loop.plan(ops_in=ops.distinct_until_changed())
     async def safety_policy(safety, on_next, self):
         if safety is True:
             self.last_speed_limit = self.loop.k.speed_limit

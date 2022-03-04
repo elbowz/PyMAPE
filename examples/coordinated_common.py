@@ -8,7 +8,7 @@ from mape.base_elements import to_monitor_cls, to_analyze_cls
 from mape.typing import Message
 
 
-@to_monitor_cls(default_uid='emergency_detect', param_self=True)
+@to_monitor_cls(default_uid='emergency_detect')
 def emergency_detect_cls(item, on_next, self):
     if 'speed' in item:
         # Local volatile knowledge
@@ -20,7 +20,7 @@ def emergency_detect_cls(item, on_next, self):
 
 
 # Analyze (instead Monitor) because start when subscribe
-@to_analyze_cls(default_uid='push_to_influx', param_self=True)
+@to_analyze_cls(default_uid='push_to_influx')
 def push_to_influx_cls(item: dict, on_next, self):
 
     for key, value in item.items():

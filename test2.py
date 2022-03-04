@@ -94,13 +94,13 @@ class HeaterMonitor(mape.base_elements.Monitor):
     uid='heater_contact_plan',
     ops_in=mape_ops.debounce(5.0),
     # ops_out=mape_ops.do_action(lambda value: logger.info(f"ops_out decorator {value}")),
-    param_self=True)
+    )
 def plan(item, on_next, self):
     item.value = True if item.value < self.target_temp else False
     on_next(item)
 
 
-@heater_a.execute(uid=UID.DEF, ops_in=mape_ops.distinct_until_changed(lambda item: item.value), param_self=True)
+@heater_a.execute(uid=UID.DEF, ops_in=mape_ops.distinct_until_changed(lambda item: item.value))
 def heater_execute(item, on_next, self):
     self.managed_element_room.set_heater(item.value)
 
@@ -109,7 +109,7 @@ def heater_execute(item, on_next, self):
 heater_b = mape.Loop(uid='heater_b')
 
 
-@heater_b.monitor(uid=UID.DEF, param_self=True)
+@heater_b.monitor(uid=UID.DEF)
 def monitor_b(item, on_next, self, something_useful=None):
     """ Simulate polling (ie read on call) """
     read_temperature = self.managed_element_room.current_temperature
@@ -138,7 +138,7 @@ class AnalyzeAVG(mape.base_elements.Analyze):
 
 
 # Same name (heater_execute) used in heater_a...allowed like following var (re)assignement
-@heater_b.execute(uid=UID.DEF, ops_in=mape_ops.distinct_until_changed(), param_self=True)
+@heater_b.execute(uid=UID.DEF, ops_in=mape_ops.distinct_until_changed())
 def heater_execute(item, on_next, self):
     self.managed_element_room.set_heater(item.value)
 
@@ -149,7 +149,7 @@ master = mape.Loop(uid='master')
 start_time = asyncio.get_event_loop().time()
 
 
-@master.analyze(uid='master_analyze', param_self=True)
+@master.analyze(uid='master_analyze')
 def master_a(item, on_next, self):
     aioloop = mape.aio_loop or asyncio.get_event_loop()
 
@@ -177,8 +177,7 @@ from mape.base_elements import to_element_cls, to_monitor_cls, to_execute_cls
     # element_class=mape.base_elements.Plan,
     # default_uid=UID.DEF,
     default_ops_in=mape_ops.do_action(lambda item: print("in", item)),
-    default_ops_out=mape_ops.do_action(lambda item: print("out", item)),
-    param_self=True)
+    default_ops_out=mape_ops.do_action(lambda item: print("out", item)))
 def my_to_element_class(item, on_next, self, something_useful=None):
     # print("my_to_element_class", item, on_next, self, something_useful)
     on_next(item)
@@ -188,8 +187,7 @@ def my_to_element_class(item, on_next, self, something_useful=None):
     # element_class=mape.base_elements.Plan,
     # default_uid=UID.DEF,
     ops_in=mape_ops.do_action(lambda item: print("in", item)),
-    ops_out=mape_ops.do_action(lambda item: print("out", item)),
-    param_self=True)
+    ops_out=mape_ops.do_action(lambda item: print("out", item)))
 def my_func_register(item, on_next, self, something_useful=None):
     print("func_register", item, on_next, self, something_useful)
     on_next(item)
@@ -200,7 +198,7 @@ class MyClassTestRegister(mape.base_elements.Analyze):
     pass
 
 
-@test_loop.execute(uid=UID.DEF, ops_in=mape_ops.distinct_until_changed(), param_self=True)
+@test_loop.execute(uid=UID.DEF, ops_in=mape_ops.distinct_until_changed())
 def heater_execute_test(item, on_next, self):
     """ Docstring of heater_execute_test """
     self.managed_element_room.set_heater(item.value)

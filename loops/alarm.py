@@ -56,15 +56,14 @@ class AnalyzeAVG(mape.base_elements.Analyze):
         return Message(**msg)
 
 
-@loop_alarm.plan(uid='plan_alarm', param_self=True)
+@loop_alarm.plan(uid='plan_alarm')
 def plan(item, on_next, self):
     item.value = True if item.value > self.threshold_air_quality else False
     on_next(item)
 
 
 @loop_alarm.execute(uid='execute_alarm',
-                    ops_in=ops.distinct_until_changed(lambda item: item.value),
-                    param_self=True)
+                    ops_in=ops.distinct_until_changed(lambda item: item.value))
 def execute(item, on_next, self):
     logger.info(f"AVG Alarm {self.path} set to {'ON' if item.value else 'OFF'}")
 

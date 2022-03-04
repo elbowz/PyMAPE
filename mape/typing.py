@@ -116,21 +116,19 @@ class MapeLoop(ABC):
 
     @abstractmethod
     def monitor(self, func=None, /, *,
-                uid=None, ops_in: Optional[OpsChain] = (), ops_out: Optional[OpsChain] = (),
-                param_self=False
+                uid=None, ops_in: Optional[OpsChain] = (), ops_out: Optional[OpsChain] = ()
                 ) -> Any:
         raise NotImplementedError
 
     @abstractmethod
     def analyze(self, func=None, /, *,
-                uid=None, ops_in: Optional[OpsChain] = (), ops_out: Optional[OpsChain] = (),
-                param_self=False
+                uid=None, ops_in: Optional[OpsChain] = (), ops_out: Optional[OpsChain] = ()
                 ) -> Any:
         raise NotImplementedError
 
     @abstractmethod
     def plan(self, func=None, /, *,
-             uid=None, ops_in: Optional[OpsChain] = (), ops_out: Optional[OpsChain] = (), param_self=False
+             uid=None, ops_in: Optional[OpsChain] = (), ops_out: Optional[OpsChain] = ()
              ) -> Any:
         raise NotImplementedError
 
@@ -140,7 +138,6 @@ class MapeLoop(ABC):
                 /, *,
                 uid=None,
                 ops_in: Optional[OpsChain] = (),
-                ops_out: Optional[OpsChain] = (),
-                param_self=False
+                ops_out: Optional[OpsChain] = ()
                 ) -> Any:
         raise NotImplementedError

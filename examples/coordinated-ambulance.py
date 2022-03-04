@@ -39,7 +39,7 @@ async def async_main(name, init_speed):
     ambulance.set_callback('speed_limit', emergency_detect)
     ambulance.set_callback('emergency_detect', emergency_detect)
 
-    @loop.plan(ops_in=ops.distinct_until_changed(), param_self=True)
+    @loop.plan(ops_in=ops.distinct_until_changed())
     async def emergency_policy(emergency, on_next, self):
         if emergency is True:
             self.last_speed_limit = self.loop.k.speed_limit

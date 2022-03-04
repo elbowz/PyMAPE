@@ -315,8 +315,7 @@ def to_element_cls(
         element_class=...,
         default_uid: str | UID = ...,
         default_ops_in: Optional[typing.OpsChain] = ...,
-        default_ops_out: Optional[typing.OpsChain] = ...,
-        param_self: bool = ...
+        default_ops_out: Optional[typing.OpsChain] = ...
 ) -> Type[Element]: ...
 
 
@@ -327,8 +326,8 @@ def to_element_cls(func=None, /, *,
                    element_class=Type[Element],
                    default_uid: str | UID = UID.DEF,
                    default_ops_in: Optional[typing.OpsChain] = (),
-                   default_ops_out: Optional[typing.OpsChain] = (),
-                   param_self: bool = False) -> Type[Element] | Callable[..., Type[Element]]:
+                   default_ops_out: Optional[typing.OpsChain] = ()
+                   ) -> Type[Element] | Callable[..., Type[Element]]:
     """ Create the decorator and manage the call w/wo parentheses (ie @decorator vs @decorator()) """
     if func is None:
         # Called as @decorator(), with parentheses.
@@ -338,11 +337,10 @@ def to_element_cls(func=None, /, *,
                        element_class=element_class,
                        default_uid=default_uid,
                        default_ops_in=default_ops_in,
-                       default_ops_out=default_ops_out,
-                       param_self=param_self)
+                       default_ops_out=default_ops_out)
 
     # Called as @decorator, without parentheses
-    return make_func_class(func, element_class, default_uid, default_ops_in, default_ops_out, param_self)
+    return make_func_class(func, element_class, default_uid, default_ops_in, default_ops_out)
 
 
 # TODO: maybe can be passed *args, **kwargs (since default_uid)
@@ -350,17 +348,11 @@ def make_func_class(func: Callable | Coroutine,
                     element_class: Type[Element],
                     default_uid: str | UID = UID.DEF,
                     default_ops_in: Optional[typing.OpsChain] = (),
-                    default_ops_out: Optional[typing.OpsChain] = (),
-                    param_self: bool = False
+                    default_ops_out: Optional[typing.OpsChain] = ()
                     ) -> Type[Element]:
 
     if default_uid == UID.DEF:
         default_uid = func.__name__
-
-    # Discover what parameters (name and default) has function signature
-    # import inspect
-    # for param in inspect.signature(func).parameters.values():
-    #     print("param_name", param.name, param.default)
 
     class ElementFunc(element_class):
         def __init__(self,
@@ -374,7 +366,10 @@ def make_func_class(func: Callable | Coroutine,
             # Additional params/kwargs passed to func()
             self._on_next_opt_kwargs = {}
 
-            if param_self:
+            # Discover what parameters (name and default) has function signature
+            func_params = inspect.signature(func).parameters
+
+            if 'self' in func_params.keys():
                 self._on_next_opt_kwargs = {'self': self}
 
             # TODO: alternative _on_next definition to test

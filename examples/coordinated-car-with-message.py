@@ -49,7 +49,7 @@ async def async_main(car_name, init_speed, ambulance_dest=None, cars_dst=None):
     car.set_callback('speed_limit', emergency_detect)
     car.set_callback('emergency_detect', emergency_detect)
 
-    @loop.analyze(param_self=True)
+    @loop.analyze
     def analyzer(item, on_next, self):
         setdefaultattr(self, 'analyzer_msg_from', {})
 
@@ -76,7 +76,7 @@ async def async_main(car_name, init_speed, ambulance_dest=None, cars_dst=None):
 
     analyzer.emergency_car_threshold = 2
 
-    @loop.plan(ops_in=ops.distinct_until_changed(lambda item: item.value), param_self=True)
+    @loop.plan(ops_in=ops.distinct_until_changed(lambda item: item.value))
     async def safety_policy(item, on_next, self):
         if item.value is True:
             self.last_speed_limit = self.loop.k.speed_limit

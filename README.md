@@ -19,7 +19,7 @@
 * Set default scheduler for pipe, subscribe, start, etc...
 * Refactor mape.init() moving on top and add a mape.run() ?!
 * ~~Change mape to a class, and implement similar to MapeLoop~~
-* Remove param_self (form decorator), and insert automatically when self is in func signature
+* ~~Remove param_self (form decorator), and insert automatically when self is in func signature~~
 * Auto import and instance loop from files/modules in ./loops (package)
 ~~* Message not mandatory in the element (add filter not CallMethod and map on hops if Message)~~
 * Gateway, maybe better call it Router

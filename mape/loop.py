@@ -117,8 +117,7 @@ class Loop(MapeLoop):
                 func: Callable = None, /, *,
                 uid: str | UID = UID.DEF,
                 ops_in: Optional[OpsChain] = (),
-                ops_out: Optional[OpsChain] = (),
-                param_self: bool = False
+                ops_out: Optional[OpsChain] = ()
                 ) -> Monitor:
         """ Function decorator """
 
@@ -126,15 +125,13 @@ class Loop(MapeLoop):
                              element_class=Monitor,
                              uid=uid,
                              ops_in=ops_in,
-                             ops_out=ops_out,
-                             param_self=param_self)
+                             ops_out=ops_out)
 
     def analyze(self,
                 func: Callable = None, /, *,
                 uid: str | UID = UID.DEF,
                 ops_in: Optional[OpsChain] = (),
-                ops_out: Optional[OpsChain] = (),
-                param_self: bool = False
+                ops_out: Optional[OpsChain] = ()
                 ) -> Analyze:
         """ Function decorator """
 
@@ -142,15 +139,13 @@ class Loop(MapeLoop):
                              element_class=Analyze,
                              uid=uid,
                              ops_in=ops_in,
-                             ops_out=ops_out,
-                             param_self=param_self)
+                             ops_out=ops_out)
 
     def plan(self,
              func: Callable = None, /, *,
              uid: str | UID = UID.DEF,
              ops_in: Optional[OpsChain] = (),
-             ops_out: Optional[OpsChain] = (),
-             param_self: bool = False
+             ops_out: Optional[OpsChain] = ()
              ) -> Plan:
         """ Function decorator """
 
@@ -158,15 +153,13 @@ class Loop(MapeLoop):
                              element_class=Plan,
                              uid=uid,
                              ops_in=ops_in,
-                             ops_out=ops_out,
-                             param_self=param_self)
+                             ops_out=ops_out)
 
     def execute(self,
                 func: Callable = None, /, *,
                 uid: str | UID = UID.DEF,
                 ops_in: Optional[OpsChain] = (),
-                ops_out: Optional[OpsChain] = (),
-                param_self: bool = False
+                ops_out: Optional[OpsChain] = ()
                 ) -> Execute:
         """ Function decorator """
 
@@ -174,8 +167,7 @@ class Loop(MapeLoop):
                              element_class=Execute,
                              uid=uid,
                              ops_in=ops_in,
-                             ops_out=ops_out,
-                             param_self=param_self)
+                             ops_out=ops_out)
 
     # Alternative method to declare execute, but missing signature/type hint
     # execute_test = functools.partialmethod(add_func, element_class=Execute)
@@ -221,8 +213,8 @@ class Loop(MapeLoop):
                  element_class: Type[TElement] = Element,
                  uid: str | UID = UID.DEF,
                  ops_in: Optional[OpsChain] = (),
-                 ops_out: Optional[OpsChain] = (),
-                 param_self: bool = False) -> TElement:
+                 ops_out: Optional[OpsChain] = ()
+                 ) -> TElement:
         """ Function decorator """
 
         if func is None:
@@ -230,14 +222,12 @@ class Loop(MapeLoop):
                            element_class=element_class,
                            uid=uid,
                            ops_in=ops_in,
-                           ops_out=ops_out,
-                           param_self=param_self)
+                           ops_out=ops_out)
 
         cls = make_func_class(func,
-                             element_class=element_class,
-                             default_uid=uid,
-                             default_ops_in=ops_in,
-                             default_ops_out=ops_out,
-                             param_self=param_self)
+                              element_class=element_class,
+                              default_uid=uid,
+                              default_ops_in=ops_in,
+                              default_ops_out=ops_out)
 
         return self.register(cls)
