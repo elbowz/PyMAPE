@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import logging
+import asyncio
 from copy import deepcopy
 from functools import reduce
 from typing import List
@@ -110,13 +111,18 @@ async def create_car_loop(name, init_speed):
 async def async_main():
     await create_speed_enforcement_loop()
 
-    await create_car_loop('Veyron', 300)
-    await create_car_loop('Countach', 190)
-    await create_car_loop('Panda', 90)
+    await asyncio.gather(
+        create_car_loop('Veyron', 300),
+        create_car_loop('Countach', 190),
+        create_car_loop('Panda', 90)
+    )
 
 
 if __name__ == '__main__':
     logger.debug('START...')
+
+    # CLI EXAMPLES
+    # * python -m examples.master-slave-speed-enforcement
 
     mape.init(debug=False)
     mape.run(entrypoint=async_main())
