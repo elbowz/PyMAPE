@@ -13,7 +13,7 @@ from mape.base_elements import Element, Monitor, Analyze, Plan, Execute, UID, to
 from mape.knowledge import Knowledge
 from mape.utils import generate_uid
 from mape.typing import MapeLoop, OpsChain
-from mape.constants import RESRVED_PREPEND, RESERVED_SEPARATOR
+from mape.constants import RESERVED_PREPEND, RESERVED_SEPARATOR
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class Loop(MapeLoop):
         if not self.add_to_level(self._level):
             raise ValueError(f"'{uid}' name is protected")
 
-        self._k = Knowledge(self.app.redis, f"{self.level.k.prefix}{RESRVED_PREPEND}{self.uid}")
+        self._k: Knowledge = Knowledge(self.app.redis, f"k{RESERVED_SEPARATOR}loop{RESERVED_SEPARATOR}{self.uid}")
 
     def add_to_app(self, app):
         return app.add_loop(self)
@@ -106,7 +106,7 @@ class Loop(MapeLoop):
         return self._level
 
     @property
-    def k(self):
+    def k(self) -> Knowledge:
         return self._k
 
     @property

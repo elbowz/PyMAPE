@@ -8,7 +8,7 @@ from mape.base_elements import Element
 from mape.level import Level
 from mape.knowledge import Knowledge
 from mape.utils import generate_uid
-from mape.constants import RESRVED_PREPEND, RESERVED_SEPARATOR
+from mape.constants import RESERVED_PREPEND, RESERVED_SEPARATOR
 
 
 class App:
@@ -18,7 +18,7 @@ class App:
         self._redis: Redis = redis
         self._loops: Dict[str, Loop] = dict()
         self._levels: Dict[str, Level] = dict()
-        self._k = Knowledge(self._redis, f"{RESRVED_PREPEND}{self.uid}")
+        self._k = Knowledge(self._redis, f"k{RESERVED_SEPARATOR}{self.uid}")
 
     def add_loop(self, loop):
         uid = loop.uid or generate_uid(self._loops, prefix=loop.prefix)
@@ -99,5 +99,5 @@ class App:
         return self._levels
 
     @property
-    def k(self):
+    def k(self) -> Knowledge:
         return self._k

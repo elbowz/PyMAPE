@@ -1,5 +1,5 @@
 import mape
-from mape.constants import RESRVED_PREPEND, RESERVED_SEPARATOR
+from mape.constants import RESERVED_PREPEND, RESERVED_SEPARATOR
 from mape.knowledge import Knowledge
 
 
@@ -17,7 +17,7 @@ class Level:
         self._app = app or mape.app
         self._loops = dict()
 
-        self._k = Knowledge(self.app.redis, f"{self.app.k.prefix}{RESRVED_PREPEND}{self.uid}")
+        self._k = Knowledge(self.app.redis, f"k{RESERVED_SEPARATOR}level{RESERVED_SEPARATOR}{self.uid}")
 
     def add_loop(self, loop):
         uid = loop.uid

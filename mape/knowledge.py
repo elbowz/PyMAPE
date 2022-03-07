@@ -1,5 +1,6 @@
 from aioredis import Redis
-from typing import Any, Dict, Type, Union, Tuple, Iterable, List, TypeVar
+from typing import Any, Dict, Type, Union, Tuple, Iterable, List, TypeVar, Callable
+from functools import partial
 
 from mape.remote.redis import (
     RedisKeySpace,
@@ -11,10 +12,11 @@ from mape.remote.redis import (
     RedisPriorityQueue,
     RedisQueue,
     RedisLifoQueue,
-    Redlock
+    Redlock,
+    subscribe_handler
 )
-from mape.remote.de_serializer import Pickled
-from mape.constants import RESRVED_PREPEND, RESERVED_SEPARATOR
+from mape.remote.de_serializer import Pickled, obj_from_raw
+from mape.constants import RESERVED_PREPEND, RESERVED_SEPARATOR
 
 T = TypeVar('T')
 
@@ -24,7 +26,7 @@ class Knowledge:
         self._redis: Redis = redis
         self._prefix: str = prefix + RESERVED_SEPARATOR
 
-        self._keyspace = self.create_keyspace(RESRVED_PREPEND + 'default_keyspace', value_type=Pickled)
+        self._keyspace = self.create_keyspace(RESERVED_PREPEND + 'default_keyspace', value_type=Pickled)
 
     def create_keyspace(self, key: str, value_type: Type[T]):
         return RedisKeySpace(self._redis, self._prefix + key + RESERVED_SEPARATOR, value_type=value_type)
@@ -52,6 +54,15 @@ class Knowledge:
 
     def create_lock(self, key, masters: List[Redis], *args, **kwargs):
         return Redlock(key, masters, *args, **kwargs)
+
+    def notifications(self, handler: Callable, key: str, redis_cmd_filter=()):
+        redis_cmd_filter = redis_cmd_filter if isinstance(redis_cmd_filter, (Tuple, List)) else [redis_cmd_filter]
+
+        def _pre_handler(redis_cmd):
+            if not redis_cmd_filter or redis_cmd in redis_cmd_filter:
+                handler(redis_cmd)
+
+        subscribe_handler({f"__keyspace@*__:{self._prefix}{key}": _pre_handler}, deserializer=partial(obj_from_raw, str))
 
     @property
     def keyspace(self) -> RedisKeySpace[Pickled]:
