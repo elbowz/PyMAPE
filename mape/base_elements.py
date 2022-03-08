@@ -379,6 +379,7 @@ def make_func_class(func: Callable | Coroutine,
         def _on_next(self, *args, **kwargs) -> Any | Awaitable:
             new_kwargs = {**self._on_next_opt_kwargs, **kwargs}
 
+            # TODO: use mape.utils.auto_task
             if inspect.iscoroutinefunction(func):
                 # The func execution is put in a task (ie parallel/background)
                 coro = task_exception(func(*args, **new_kwargs))

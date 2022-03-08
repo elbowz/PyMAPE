@@ -148,8 +148,6 @@ def run(entrypoint: Union[Callable, Coroutine] = None):
         if asyncio.iscoroutine(entrypoint):
             task = aio_loop.create_task(task_exception(entrypoint), name='entrypoint')
             task.add_done_callback(on_done)
-        else:
-            entrypoint()
 
     aio_loop.run_forever()
 

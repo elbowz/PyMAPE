@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import asyncio
 from functools import partial
-from typing import List, Dict, Callable
+from typing import Tuple, List, Dict, Callable
 
 import mape
 from mape.remote.de_serializer import obj_from_raw, Pickled
-from mape.utils import log_task_exception
+from mape.utils import log_task_exception, auto_task
 
 
 def subscribe_handler_deco(channels_patterns, full_message=False, deserializer=None, redis=None):
@@ -46,3 +46,15 @@ def subscribe_handler(sub_handlers: Dict[str, Callable], full_message=False, des
     task = asyncio.create_task(init_redis_sub())
     task.add_done_callback(on_cancel)
     return task
+
+
+def notifications_handler(handler: Callable, key: str, cmd_filter=(), full_message=False, *args, **kwargs):
+    cmd_filter = cmd_filter if isinstance(cmd_filter, (Tuple, List)) else [cmd_filter]
+
+    def _pre_handler(message):
+        redis_cmd = message['data'] if full_message else message
+
+        if not cmd_filter or redis_cmd in cmd_filter:
+            auto_task(handler, message)
+
+    subscribe_handler({key: _pre_handler}, full_message, deserializer=partial(obj_from_raw, str), *args, **kwargs)

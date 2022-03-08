@@ -59,6 +59,7 @@
 * Monitor, Analyze, Plan, Execute should have a param to change the startOnSub, startOnInit
 * Add waitForLoop to sync (Data hydratation) loop through redis. Should be used before connect mape element e so use mape.loop.element.uid...take inspiration from redislock (BAH?!)
 * Use https://pypi.org/project/decorator/ for define decorator?!
+* Convert Master/Slave to REST 
 
 ## CLI
 * `sudo docker run --name mape-redis -p 6379:6379 -v $(pwd)/docker/redis:/usr/local/etc/redis --rm redis redis-server /usr/local/etc/redis/redis.conf`

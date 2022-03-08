@@ -2,6 +2,7 @@ import sys
 import uuid
 import inspect
 import logging
+import asyncio
 import threading
 
 import functools
@@ -145,6 +146,14 @@ def log_task_exception(coro):
     async def wrapped(*args, **kwargs):
         return await task_exception(coro(*args, **kwargs), module_name=module_name)
     return wrapped
+
+
+def auto_task(func, *args, **kwargs):
+    if asyncio.iscoroutinefunction(func):
+        awaitable = task_exception(func(*args, **kwargs))
+        return asyncio.create_task(awaitable)
+    else:
+        return func(*args, **kwargs)
 
 
 async def aio_call(func):

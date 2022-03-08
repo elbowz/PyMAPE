@@ -13,7 +13,7 @@ from mape.remote.redis import (
     RedisQueue,
     RedisLifoQueue,
     Redlock,
-    subscribe_handler
+    notifications_handler
 )
 from mape.remote.de_serializer import Pickled, obj_from_raw
 from mape.constants import RESERVED_PREPEND, RESERVED_SEPARATOR
@@ -55,14 +55,8 @@ class Knowledge:
     def create_lock(self, key, masters: List[Redis], *args, **kwargs):
         return Redlock(key, masters, *args, **kwargs)
 
-    def notifications(self, handler: Callable, key: str, redis_cmd_filter=()):
-        redis_cmd_filter = redis_cmd_filter if isinstance(redis_cmd_filter, (Tuple, List)) else [redis_cmd_filter]
-
-        def _pre_handler(redis_cmd):
-            if not redis_cmd_filter or redis_cmd in redis_cmd_filter:
-                handler(redis_cmd)
-
-        subscribe_handler({f"__keyspace@*__:{self._prefix}{key}": _pre_handler}, deserializer=partial(obj_from_raw, str))
+    def notifications(self, handler: Callable, key: str, *args, **kwargs):
+        return notifications_handler(handler, f"__keyspace@*__:{self._prefix}{key}", *args, **kwargs)
 
     @property
     def keyspace(self) -> RedisKeySpace[Pickled]:
