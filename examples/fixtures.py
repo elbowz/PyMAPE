@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-# import numpy
+import numpy as np
 import random
 import logging
 import asyncio
@@ -31,7 +31,7 @@ class VirtualCar:
 
     async def _service_loop(self):
         while True and not self._task_service_loop.cancelled():
-            # if numpy.random.choice((True, False), p=[0.1, 0.9]):
+            # if np.random.choice((True, False), p=[0.1, 0.9]):
             #     self.hazard_lights = True
 
             delta_speed = max(random.randint(0, 3), int(abs(self.speed_limit - self._speed) / 4))
@@ -117,3 +117,63 @@ class VirtualAmbulance(VirtualCar):
     def siren(self, state: bool):
         logger.info(f"{self.__class__.__name__} {self.uid} siren: {'ON' if state else 'OFF'}")
         self._siren = state
+
+
+class VirtualCarGenerator:
+    def __init__(self,
+                 auto_generation=True,
+                 max_car_enter=6,
+                 max_car_exit=6,
+                 cars_file='examples/car_name.csv'
+                 ) -> None:
+        self._cars: set = set()
+        self._max_car_enter = max_car_enter
+        self._max_car_exit = max_car_exit
+        self._callbacks: dict = {}
+        self._car_names_pool = np.genfromtxt(cars_file, dtype='str')
+
+        if auto_generation:
+            self._task_service_loop = asyncio.create_task(self._service_loop())
+
+    async def _service_loop(self):
+        while True and not self._task_service_loop.cancelled():
+            action = np.random.choice(('enter', 'exit'), p=(0.5, 0.5))
+
+            if action == 'enter':
+                self.add_random_cars(random.randint(0, self._max_car_enter))
+            else:
+                self.remove_random_cars(random.randint(0, self._max_car_exit))
+
+            # random.uniform(2, 4)
+            await asyncio.sleep(4)
+
+    def __del__(self):
+        self._task_service_loop.cancel()
+
+    def set_callback(self, name: str, callback: Callable, init=True):
+        if name not in self._callbacks:
+            self._callbacks[name] = [callback]
+        else:
+            self._callbacks[name].append(callback)
+
+    def _call_cb(self, action, value):
+        for callback in self._callbacks.get(action, []):
+            callback({action: value})
+
+    def add_random_cars(self, count=1):
+        for car_name in np.random.choice(self._car_names_pool, count):
+            self._cars.add(car_name)
+            self._call_cb('enter', car_name)
+
+    def remove_random_cars(self, count=1):
+        for i in range(count):
+            try:
+                car_name = self._cars.pop()
+            except KeyError as e:
+                pass
+            else:
+                self._call_cb('exit', car_name)
+
+    @property
+    def cars(self):
+        return self._cars
