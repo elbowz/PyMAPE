@@ -60,7 +60,7 @@ async def create_speed_enforcement_loop():
     # loop.avg.debug(Element.Debug.OUT)
 
     @loop.plan(ops_out=ops.router())
-    def penalty(item, on_next, self):
+    def penalty(item: Message, on_next, self):
         delta_speed = item.value - self.speed_threshold
 
         if delta_speed > self.speed_threshold * 0.6:

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 
 import random
 import sys
 import logging
 import asyncio
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -50,7 +52,7 @@ async def async_main(car_name, init_speed, ambulance_dest=None, cars_dst=None):
     car.set_callback('emergency_detect', emergency_detect)
 
     @loop.analyze
-    def analyzer(item, on_next, self):
+    def analyzer(item: Message | Any, on_next, self):
         setdefaultattr(self, 'analyzer_msg_from', {})
 
         if isinstance(item, Message):
@@ -77,7 +79,7 @@ async def async_main(car_name, init_speed, ambulance_dest=None, cars_dst=None):
     analyzer.emergency_car_threshold = 2
 
     @loop.plan(ops_in=ops.distinct_until_changed(lambda item: item.value))
-    async def safety_policy(item, on_next, self):
+    async def safety_policy(item: Message, on_next, self):
         if item.value is True:
             self.last_speed_limit = self.loop.k.speed_limit
             new_speed = min(self.last_speed_limit, self.safety_speed)
