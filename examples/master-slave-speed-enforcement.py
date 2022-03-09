@@ -14,8 +14,6 @@ from mape import operators as ops
 from mape.remote.redis import SubObservable
 from mape.typing import Message
 
-from examples.coordinated_common import prompt_setup
-
 logger = init_logger()
 logger.setLevel(logging.DEBUG)
 

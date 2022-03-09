@@ -121,12 +121,16 @@ class VirtualAmbulance(VirtualCar):
 
 class VirtualCarGenerator:
     def __init__(self,
+                 uid,
                  auto_generation=True,
+                 lanes=1,
                  max_car_enter=6,
                  max_car_exit=6,
                  cars_file='examples/car_name.csv'
                  ) -> None:
+        self._uid = uid
         self._cars: set = set()
+        self._lanes = lanes
         self._max_car_enter = max_car_enter
         self._max_car_exit = max_car_exit
         self._callbacks: dict = {}
@@ -163,7 +167,8 @@ class VirtualCarGenerator:
     def add_random_cars(self, count=1):
         for car_name in np.random.choice(self._car_names_pool, count):
             self._cars.add(car_name)
-            self._call_cb('enter', car_name)
+            lane = random.randint(0, max(0, self.lanes-1))
+            self._call_cb(f"enter_{lane}", car_name)
 
     def remove_random_cars(self, count=1):
         for i in range(count):
@@ -172,8 +177,22 @@ class VirtualCarGenerator:
             except KeyError as e:
                 pass
             else:
-                self._call_cb('exit', car_name)
+                lane = random.randint(0, max(0, self.lanes-1))
+                self._call_cb(f"exit_{lane}", car_name)
+
+    @property
+    def uid(self):
+        return self._uid
 
     @property
     def cars(self):
         return self._cars
+
+    @property
+    def lanes(self):
+        return self._lanes
+
+    @lanes.setter
+    def lanes(self, count: int):
+        logger.info(f"{self._uid} has {count} lanes")
+        self._lanes = count

@@ -14,8 +14,6 @@ from mape import operators as ops
 from mape.typing import Message
 from mape.remote.influxdb import InfluxObserver
 
-from examples.coordinated_common import prompt_setup
-
 logger = init_logger()
 logger.setLevel(logging.DEBUG)
 
@@ -28,11 +26,11 @@ class Car(BaseModel):
     action: str
 
 
-async def async_main(name, count_lanes):
-    opposite_carriageway = f"carriageway_{'up' if name == 'down' else 'down'}"
+async def create_lane(number, k_cars, cars_generator):
+    carriageway = cars_generator.uid
 
     """ MAPE Loop and elements definition """
-    loop = Loop(uid=f"carriageway_{name}")
+    loop = Loop(uid=f"lane_{number}")
 
     @loop.monitor
     def car_mon(car, on_next):
@@ -44,35 +42,57 @@ async def async_main(name, count_lanes):
     async def cars_store(car, on_next, self):
         # Avoid "concurrent" add/remove in Redis set
         async with self.lock:
-            if car.action == 'enter':
+            if 'enter' in car.action:
                 # Add new car to Set in global K
                 await self.k_cars.add(car.name)
-            elif car.action == 'exit':
+            elif 'exit' in car.action:
                 # Remove car from Set in global K
                 await self.k_cars.remove(car.name)
 
             car_count = await self.k_cars.len()
-            logger.debug(f"{self.loop.uid: <16} | {car.action: <5} | {car.name: <12} | {car_count:>3} (tot)")
+            logger.debug(f"{self.loop.uid: <6} | {car.action[:-2]: <5} | {car.name: <12} | {car_count:>3} (tot)")
             # cars = [car async for car in self.k_cars.values()]
             # logger.debug(f"{await self.k_cars.len()} cars in '{self.loop}'")
 
-            on_next(Message.create(car_count, src=self))
+            on_next(car_count)
 
-    # Create SeT in the global Knowledge
-    k_cars = mape.app.k.create_set(f"{loop}_cars", str)
-    # Clean Set before each start
-    await k_cars.clear()
     cars_store.k_cars = k_cars
     cars_store.lock = asyncio.Lock()
 
+    @loop.execute
+    def set_lane(lanes: Message, on_next, self):
+        cars_generator.lanes = lanes.value
+
+    car_mon.subscribe(cars_store)
+    # Use InfluxDB sink/terminator to store number of cars and lanes
+    cars_store.subscribe(InfluxObserver(tags=('type', f"cars_{carriageway}")))
+
+    # Starting monitor...
+    logger.info(f"{car_mon.path} element started")
+    car_mon.start()
+
+    # Register handlers
+    cars_generator.set_callback(f"enter_{number}", car_mon)
+    cars_generator.set_callback(f"exit_{number}", car_mon)
+
+
+async def async_main(name, count_lanes):
+    opposite_carriageway = f"carriageway_{'up' if name == 'down' else 'down'}"
+
+    """ MAPE Loop and elements definition """
+    loop = Loop(uid=f"carriageway_{name}")
+
     class Lanes(Plan):
         def __init__(self, loop, opposite_carriageway, max_lanes=8, uid=None):
-            super().__init__(loop, uid, ops_out=ops.distinct_until_changed(lambda item: item.value))
+            super().__init__(loop, uid, ops_out=(
+                ops.distinct_until_changed(lambda item: item.value),
+                ops.router()
+            ))
 
             self.max_lanes = max_lanes
             # Get access to Sets (up and down) in the global K
             self.k_cars = self.loop.app.k.create_set(f"{self.loop}_cars", str)
-            self.k_cars_opposite = loop.app.k.create_set(f"{opposite_carriageway}_cars", str)
+            self.k_cars_opposite = self.loop.app.k.create_set(f"{opposite_carriageway}_cars", str)
 
             # Register handler for add (sadd) / remove (srem) cars
             self.loop.app.k.notifications(self._on_cars_change,
@@ -94,36 +114,30 @@ async def async_main(name, count_lanes):
                 elif lanes == 8:
                     lanes = lanes if opposite_cars == 0 else 7
 
-                self._on_next(Message.create(lanes, src=self))
+                # Send to the lane executer (lane_{number}.set_lane)
+                dst_path = f"lane_{max(0, lanes-1)}.set_lane"
+                self._on_next(Message.create(lanes, src=self, dst=dst_path))
 
     # Instance lanes planner
     lanes = Lanes(loop, opposite_carriageway, max_lanes=count_lanes, uid='lanes')
 
-    @loop.execute
-    def set_lanes(lanes: Message, on_next, self):
-        logger.info(f"Set {lanes.value} lanes for {self.loop}")
-
     """ MAPE Elements LOCAL connection """
-    car_mon.subscribe(cars_store)
-    lanes.subscribe(set_lanes)
-
-    # Use InfluxDB sink/terminator to store number of cars and lanes
-    cars_store.subscribe(InfluxObserver())
     lanes.subscribe(InfluxObserver())
 
-    # Starting monitor...
-    logger.info(f"{car_mon.path} element started")
-    car_mon.start()
+    # Create Set in the global Knowledge
+    k_cars = mape.app.k.create_set(f"{loop}_cars", str)
+    # Clean Set before each start
+    await k_cars.clear()
 
     # Managed elements
     from examples.fixtures import VirtualCarGenerator
-    cars_generator = VirtualCarGenerator(auto_generation=False)
+    cars_generator = VirtualCarGenerator(loop.uid, auto_generation=False, lanes=count_lanes)
     # Stdin/key bindings setup for user input
     prompt_setup(cars_generator)
 
-    # Register handlers
-    cars_generator.set_callback('enter', car_mon)
-    cars_generator.set_callback('exit', car_mon)
+    # Create road lanes
+    for number in range(count_lanes):
+        await create_lane(number, k_cars, cars_generator)
 
 
 def prompt_setup(cars_generator):
