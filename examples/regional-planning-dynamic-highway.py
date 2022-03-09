@@ -39,7 +39,7 @@ async def create_lane(number, k_cars, cars_generator):
         on_next(Car(action=action, name=car[action]))
 
     @loop.analyze
-    async def cars_store(car, on_next, self):
+    async def cars_store(car: Car, on_next, self):
         # Avoid "concurrent" add/remove in Redis set
         async with self.lock:
             if 'enter' in car.action:
@@ -49,6 +49,7 @@ async def create_lane(number, k_cars, cars_generator):
                 # Remove car from Set in global K
                 await self.k_cars.remove(car.name)
 
+            # Count current cars in carriageway
             car_count = await self.k_cars.len()
             logger.debug(f"{self.loop.uid: <6} | {car.action[:-2]: <5} | {car.name: <12} | {car_count:>3} (tot)")
             # cars = [car async for car in self.k_cars.values()]
@@ -64,7 +65,7 @@ async def create_lane(number, k_cars, cars_generator):
         cars_generator.lanes = lanes.value
 
     car_mon.subscribe(cars_store)
-    # Use InfluxDB sink/terminator to store number of cars and lanes
+    # Use InfluxDB sink/terminator to store number of cars
     cars_store.subscribe(InfluxObserver(tags=('type', f"cars_{carriageway}")))
 
     # Starting monitor...
@@ -105,7 +106,7 @@ async def async_main(name, count_lanes):
             opposite_cars = await self.k_cars_opposite.len()
             tot = cars + opposite_cars
 
-            # Compute current highway number of lanes
+            # Compute new carriageway number of lanes
             if tot:
                 lanes = round(self.max_lanes / tot * cars)
 
@@ -122,9 +123,10 @@ async def async_main(name, count_lanes):
     lanes = Lanes(loop, opposite_carriageway, max_lanes=count_lanes, uid='lanes')
 
     """ MAPE Elements LOCAL connection """
+    # Use InfluxDB sink/terminator to store number of lanes
     lanes.subscribe(InfluxObserver())
 
-    # Create Set in the global Knowledge
+    # Get access to Set in the global Knowledge (type string)
     k_cars = mape.app.k.create_set(f"{loop}_cars", str)
     # Clean Set before each start
     await k_cars.clear()
