@@ -54,14 +54,12 @@ class Message(Item):
 @dataclass
 class CallMethod(Item):
     name: str = None
-    args: list = None
-    kwargs: dict = None
+    args: tuple | list = ()
+    kwargs: dict = field(default_factory=lambda: dict())
 
     @classmethod
-    def create(cls, name, *, args=None, kwargs=None,
-               src: Optional[base_elements.Element | str] = None,
-               dst: Optional[base_elements.Element | str] = None):
-        return cls(name=name, args=args, kwargs=kwargs, src=cls._element2path(src), dst=cls._element2path(dst))
+    def create(cls, name, *args, **kwargs):
+        return cls(name=name, args=args, kwargs=kwargs)
 
     def exec(self, obj_or_module):
         # TODO: test with async Method (maybe something like): ElementFunc._on_next()
