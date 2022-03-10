@@ -9,6 +9,7 @@ PyYAML==6.0
 purse @ git+https://github.com/plataux/purse.git@32900d5556ad1f03ec06f5f60cea04db5fec6197
 
 # for examples
+numpy==1.22.0
 prompt-toolkit==3.0.24
 asyncstdlib==3.10.3
-numpy==1.22.0
+simple-pid==1.0.1

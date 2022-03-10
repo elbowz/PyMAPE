@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import numpy as np
 import random
+import time
 import logging
 import asyncio
+import numpy as np
 
 from typing import Callable, Any
 
@@ -196,3 +197,87 @@ class VirtualCarGenerator:
     def lanes(self, count: int):
         logger.info(f"{self._uid} has {count} lanes")
         self._lanes = count
+
+
+class VirtualCarSpeed:
+    def __init__(self,
+                 uid='Car',
+                 speed: float = 50,
+                 max_power: float = 70,
+                 max_break: float = 70,
+                 position: float = 0
+                 ) -> None:
+        logger.info(f"Init {self.__class__.__name__} {uid}...")
+
+        self.uid: str = uid
+        self.speed: float = float(speed)
+        self.max_power = float(max_power)
+        self.max_break = float(max_break)
+        self.position: float = float(position)
+
+        self._last_update = time.time()
+        self._callbacks: dict = {}
+
+    def set_callback(self, name: str, callback: Callable, init=True):
+        if name not in self._callbacks:
+            self._callbacks[name] = [callback]
+        else:
+            self._callbacks[name].append(callback)
+
+        if init and (value := getattr(self, name, None)) is not None:
+            callback({name: value})
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        old_value = getattr(self, name, None)
+
+        super().__setattr__(name, value)
+
+        if hasattr(self, '_callbacks') and (callbacks := self._callbacks.get(name, None)):
+            for callback in callbacks:
+                callback({name: value})
+
+    async def gas(self, power: int):
+        await self._update(power)
+
+    async def brake(self, power: int):
+        await self._update(power)
+
+    async def _update(self, value):
+        await asyncio.sleep(0.1)
+
+        current_time = time.time()
+        dt = current_time - self._last_update
+
+        if value > 0:
+            # Accelerate
+            self.speed += 0.1 * value * dt
+        elif value < 0:
+            # Break
+            self.speed += 0.5 * value * dt
+        else:
+            # Do nothing (friction and wind resistance)
+            self.speed -= 4 * dt
+
+        meters_per_seconds = self.speed * (1000/3600)
+        self.position += meters_per_seconds * dt
+
+        self._last_update = current_time
+
+    @property
+    def speed(self):
+        return self._speed
+
+    @speed.setter
+    def speed(self, speed: float):
+        logger.info(f"{self.__class__.__name__} {self.uid} speed: {speed} Km/h")
+        self._speed = speed
+
+    @property
+    def position(self):
+        return self._position
+
+    @position.setter
+    def position(self, position: float):
+        logger.info(f"{self.__class__.__name__} {self.uid} position: {position} m")
+        self._position = position
+
