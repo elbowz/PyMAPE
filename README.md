@@ -16,11 +16,19 @@
 
 ### Install
 
+Clone repo locally:
+```bash
+git clone https://github.com/elbowz/PyMAPE.git
+```
+
+Create a python env (if you need) and install requirements:
 ```bash
 python -m venv venv
 source venv/bin/activate
-python -m pip install -r requirements.txt
+python -m pip install -r PyMAPE/requirements.txt
 ```
+
+See [Examples](#examples) for play with some MAPE-K patterns.
 
 ### First loop (Ambulance)
 
@@ -93,7 +101,7 @@ mape.app['loop_uid.element_uid']
 
 ### Slides
 
-TODO
+[Introduction to PyMAPE](/docs/slides.pdf) with examples
 
 ### Examples
 
@@ -104,6 +112,8 @@ Implementation of the 5 decentralized (and distributed) MAPE patterns described 
 * **Average Speed Enforcement** (Master/Slave)
 * **Dynamic Carriageway** (Regional Planning)
 * **Cruise Control with Distance Hold** (Hierarchical Control)
+
+If you want try some examples (path `examples/`), refer to section `# CLI EXAMPLES` inside the source code of each one.  
 
 The examples could have need of a Redis and InfluxDB instance running.
 
