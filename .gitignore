@@ -1,2 +1,6 @@
 /docker/influxdb/conf/*
 /docker/influxdb/data/*
+!.gitkeep
+/.env
+/dist
+/run.sh
