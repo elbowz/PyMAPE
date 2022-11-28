@@ -4,7 +4,7 @@
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
 <p align="center">
-  <img src="docs/imgs/logo.png" alt="PyMAPE" width="400">
+  <img src="https://github.com/elbowz/PyMAPE/raw/main/docs/imgs/logo.png" alt="PyMAPE" width="400">
   <h3 align="center">Decentralized Monitor Analyze Plan Execute Knowledge loops</h3>
   <p align="center">
     Software framework to support the development and deployment of Autonomous (Self-Adaptive) Systems
@@ -23,16 +23,16 @@ git clone https://github.com/elbowz/PyMAPE.git
 
 Create a python env (if you need) and install requirements:
 ```bash
-python -m venv venv
-source venv/bin/activate
-python -m pip install -r PyMAPE/requirements.txt
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r PyMAPE/requirements.txt
 ```
 
 See [Examples](#examples) for play with some MAPE-K patterns.
 
 ### First loop (Ambulance)
 
-![ambulance diagram](docs/imgs/mape_ambulance.png)
+![ambulance diagram](https://github.com/elbowz/PyMAPE/raw/main/docs/imgs/mape_ambulance.png)
 
 ```python
 import mape
@@ -142,7 +142,7 @@ See source for more information.
 [issues-shield]: https://img.shields.io/github/issues/elbowz/pymape.svg?style=for-the-badge
 [issues-url]: https://github.com/elbowz/pymape/issues
 [license-shield]: https://img.shields.io/github/license/elbowz/pymape.svg?style=for-the-badge
-[license-url]: /LICENSE.txt
+[license-url]: /LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/in/emanuele-palombo/
 [rxpy-shield]: https://img.shields.io/static/v1?label=Powered&message=RxPY&style=for-the-badge&color=informational
