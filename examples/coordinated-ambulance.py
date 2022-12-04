@@ -10,17 +10,18 @@ from mape import operators as ops
 from mape.remote.redis import SubObservable
 from mape.remote.influxdb import InfluxObserver
 
-from examples.coordinated_common import prompt_setup
+from coordinated_common import prompt_setup
 
 logger = init_logger()
 logger.setLevel(logging.DEBUG)
 
-mape.setup_logger()
+# TODO: I guess can be definitely removed (no more useful)
+# mape.setup_logger()
 logging.getLogger('mape').setLevel(logging.DEBUG)
 
 
-async def async_main(name, init_speed):
-    from examples.fixtures import VirtualAmbulance
+async def async_main(name, init_speed, with_redis=False):
+    from fixtures import VirtualAmbulance
 
     # Managed elements
     ambulance = VirtualAmbulance(name, speed=init_speed)
@@ -31,7 +32,7 @@ async def async_main(name, init_speed):
     loop = Loop(uid='ambulance_emergency')
 
     # External monitor element
-    from examples.coordinated_common import emergency_detect_cls
+    from coordinated_common import emergency_detect_cls
 
     emergency_detect = emergency_detect_cls(loop=loop)
 
@@ -80,16 +81,17 @@ async def async_main(name, init_speed):
     )
 
     # Service monitor for monitor speed
-    from examples.coordinated_common import push_to_influx_cls
+    from coordinated_common import push_to_influx_cls
     push_to_influx = push_to_influx_cls(loop=loop)
     push_to_influx.subscribe(InfluxObserver())
     ambulance.set_callback('speed', push_to_influx)
 
     """ MAPE Elements REMOTE connection """
 
-    # Listen/Subscribe for others cars emergency_detect output
-    # notes: for clarity can be used "emergency_policy.port_in" and "emergency_detect.uid"
-    SubObservable(f"car_*_safety.{emergency_detect}").subscribe(emergency_policy)
+    if with_redis:
+        # Listen/Subscribe for others cars emergency_detect output
+        # notes: for clarity can be used "emergency_policy.port_in" and "emergency_detect.uid"
+        SubObservable(f"car_*_safety.{emergency_detect}").subscribe(emergency_policy)
 
     # Starting monitor...
     logger.info(f"{emergency_detect} element started")
@@ -100,8 +102,12 @@ if __name__ == '__main__':
     logger.debug('START...')
 
     # CLI EXAMPLES
-    # * Redis: python -m examples.coordinated-ambulance --speed 80
-    # * REST: python -m examples.coordinated-ambulance --speed 80 --web-server 0.0.0.0:6000
+    # * Redis: python -m coordinated-ambulance --speed 80
+    # * REST: python -m coordinated-ambulance --speed 80 --web-server 0.0.0.0:6000
+    #
+    # notes:
+    #   * "python -m coordinated-ambulance" == "python coordinated-ambulance.py" == "./coordinated-ambulance.py"
+    #   * Use F1/F2 keys to report the start/stop of an emergency
 
     import argparse
     parser = argparse.ArgumentParser(description='MAPE Loop')
@@ -110,11 +116,12 @@ if __name__ == '__main__':
     parser.add_argument('-w', '--web-server', type=str, metavar='HOST_PORT')
     args = parser.parse_args()
 
-    init_kwargs = {'redis_url': 'redis://localhost:6379'}
-    init_kwargs = {**init_kwargs, 'rest_host_port': args.web_server} if args.web_server else init_kwargs
-    init_kwargs = {**init_kwargs, 'config_file': 'examples/coordinated.yml'}
+    from os import path
+
+    init_kwargs = {'rest_host_port': args.web_server} if args.web_server else {'redis_url': 'redis://localhost:6379'}
+    init_kwargs = {**init_kwargs, 'config_file': path.dirname(path.realpath(__file__)) + '/coordinated.yml'}
 
     mape.init(debug=False, **init_kwargs)
-    mape.run(entrypoint=async_main(args.name, init_speed=args.speed))
+    mape.run(entrypoint=async_main(args.name, init_speed=args.speed, with_redis=('redis_url' in init_kwargs)))
 
     logger.debug('...STOP')

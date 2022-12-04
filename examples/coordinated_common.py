@@ -30,7 +30,7 @@ def push_to_influx_cls(item: dict, on_next, self):
 
 
 def prompt_setup(vehicle):
-    from examples.utils import handle_prompt
+    from utils import handle_prompt
 
     def prompt_handler(value):
         if value in ['exit', 'close', 'stop']:

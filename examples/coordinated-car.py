@@ -16,7 +16,7 @@ from mape.remote.redis import SubObservable, PubObserver
 from mape.remote.rest import POSTObserver
 from mape.remote.influxdb import InfluxObserver
 
-from examples.coordinated_common import prompt_setup
+from coordinated_common import prompt_setup
 
 logger = init_logger()
 logger.setLevel(logging.DEBUG)
@@ -29,8 +29,8 @@ class SpeedItem(BaseModel):
     value: int = 0
 
 
-async def async_main(car_name, init_speed, ambulance_dest=None, cars_dst=None):
-    from examples.fixtures import VirtualCar
+async def async_main(car_name, init_speed, ambulance_dest=None, cars_dst=None, with_redis=False):
+    from fixtures import VirtualCar
 
     # Managed elements
     car = VirtualCar(car_name, init_speed)
@@ -41,7 +41,7 @@ async def async_main(car_name, init_speed, ambulance_dest=None, cars_dst=None):
     loop = Loop(uid=f"car_{car_name}_safety")
 
     # External Monitor element
-    from examples.coordinated_common import emergency_detect_cls
+    from coordinated_common import emergency_detect_cls
 
     emergency_detect = emergency_detect_cls(loop=loop)
     car.set_callback('speed', emergency_detect)
@@ -85,7 +85,7 @@ async def async_main(car_name, init_speed, ambulance_dest=None, cars_dst=None):
     safety_policy.subscribe(hazard_lights)
 
     # Service monitor for monitor speed
-    from examples.coordinated_common import push_to_influx_cls
+    from coordinated_common import push_to_influx_cls
 
     push_to_influx = push_to_influx_cls(loop=loop)
     push_to_influx.subscribe(InfluxObserver(fields_mapper=lambda item: (item.type, item.value)))
@@ -116,14 +116,14 @@ async def async_main(car_name, init_speed, ambulance_dest=None, cars_dst=None):
         ambulance_emergency_policy = POSTObserver(f"http://{ambulance_dest}", 'ambulance_emergency.emergency_policy')
         emergency_detect_out.subscribe(ambulance_emergency_policy)
 
-    if not cars_dst:
+    if with_redis:
         # Listen/Subscribe for others cars analyzer output
         # note: for clarity can be used "safety_policy.port_in" and "analyzer.uid"
         SubObservable(f"car_*_safety.{analyzer}").subscribe(safety_policy)
 
         # Send/Publish the analyzer output to others cars (for clarity can be used "analyzer.port_out")
         analyzer_out.subscribe(PubObserver(analyzer.path))
-    else:
+    elif cars_dst:
         # Send stream to elements through a POST request
         for host in cars_dst:
             host, car_name = host.split('/')
@@ -141,11 +141,15 @@ if __name__ == '__main__':
 
     # CLI EXAMPLES
     # Redis:
-    # * python -m examples.coordinated-car --name Veyron --speed 380
+    # * python -m coordinated-car --name Veyron --speed 380
     # REST:
-    # 1. python -m examples.coordinated-car --name Veyron --speed 380 --web-server 0.0.0.0:6060 --ambulance 0.0.0.0:6000 --cars 0.0.0.0:6061/Countach 0.0.0.0:6062/Panda
-    # 2. python -m examples.coordinated-car --name Countach --speed 240 --web-server 0.0.0.0:6061 --ambulance 0.0.0.0:6000 --cars 0.0.0.0:6060/Veyron 0.0.0.0:6062/Panda
-    # 3. python -m examples.coordinated-car --name Panda --speed 90 --web-server 0.0.0.0:6062 --ambulance 0.0.0.0:6000 --cars 0.0.0.0:6060/Veyron 0.0.0.0:6061/Countach
+    # 1. python -m coordinated-car --name Veyron --speed 380 --web-server 0.0.0.0:6060 --ambulance 0.0.0.0:6000 --cars 0.0.0.0:6061/Countach 0.0.0.0:6062/Panda
+    # 2. python -m coordinated-car --name Countach --speed 240 --web-server 0.0.0.0:6061 --ambulance 0.0.0.0:6000 --cars 0.0.0.0:6060/Veyron 0.0.0.0:6062/Panda
+    # 3. python -m coordinated-car --name Panda --speed 90 --web-server 0.0.0.0:6062 --ambulance 0.0.0.0:6000 --cars 0.0.0.0:6060/Veyron 0.0.0.0:6061/Countach
+    #
+    # notes:
+    #   * "python -m coordinated-car" == "python coordinated-car.py" == "./coordinated-car.py"
+    #   * Use F1/F2 keys to report the start/stop of an emergency
 
     import argparse
     parser = argparse.ArgumentParser(description='MAPE Loop')
@@ -156,15 +160,17 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--cars', type=str, nargs='*', metavar='HOST_PORT/CAR_NAME')
     args = parser.parse_args()
 
-    init_kwargs = {'redis_url': 'redis://localhost:6379'}
-    init_kwargs = {**init_kwargs, 'rest_host_port': args.web_server} if args.web_server else init_kwargs
-    init_kwargs = {**init_kwargs, 'config_file': 'examples/coordinated.yml'}
+    from os import path
+
+    init_kwargs = {'rest_host_port': args.web_server} if args.web_server else {'redis_url': 'redis://localhost:6379'}
+    init_kwargs = {**init_kwargs, 'config_file': path.dirname(path.realpath(__file__)) + '/coordinated.yml'}
 
     run_kwargs = {
         'car_name': args.name,
         'init_speed': args.speed,
         'ambulance_dest': args.ambulance,
-        'cars_dst': args.cars
+        'cars_dst': args.cars,
+        'with_redis': 'redis_url' in init_kwargs
     }
 
     mape.init(debug=False, **init_kwargs)
