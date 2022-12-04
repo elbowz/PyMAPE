@@ -16,19 +16,22 @@
 
 ### Install
 
-Clone repo locally:
 ```bash
-git clone https://github.com/elbowz/PyMAPE.git
-```
-
-Create a python env (if you need) and install requirements:
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install -r PyMAPE/requirements.txt
+pip install pymape
 ```
 
 See [Examples](#examples) for play with some MAPE-K patterns.
+
+### Install for Developers and Contributors
+
+```bash
+git clone https://github.com/elbowz/PyMAPE.git
+cd PyMAPE
+poetry install
+```
+*note:* you need to have already installed [poetry](https://python-poetry.org/)
+
+Then use `poetry shell` and/or `poetry run` (eg. `poetry run examples/coordinated-ambulance.py --speed 80`) to exec your script inside the development environment.
 
 ### First loop (Ambulance)
 
@@ -115,7 +118,9 @@ Implementation of the 5 decentralized (and distributed) MAPE patterns described 
 
 If you want try some examples (path `examples/`), refer to section `# CLI EXAMPLES` inside the source code of each one.  
 
-The examples could have need of a Redis and InfluxDB instance running.
+The examples need furthers requirements, please see [pyproject.toml](https://github.com/elbowz/PyMAPE/raw/main/pyproject.toml) or use poetry to [install them](#Install_for_Developers_and_Contributors).  
+
+You also need a Redis and InfluxDB instance running, for example:
 
 ```bash
 docker run --name mape-redis -p 6379:6379  \
@@ -133,7 +138,7 @@ docker run --name mape-influxdb -p 8086:8086 \
 -e DOCKER_INFLUXDB_INIT_ORG=univaq \
 -e DOCKER_INFLUXDB_INIT_BUCKET=mape \
 -e DOCKER_INFLUXDB_INIT_RETENTION=1w \
--e DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=<GENERATE_OR_USE_TOKEN_IN_CONFIG_YAML> \
+-e DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=<GENERATE_OR_TAKE_FROM_CONFIG_YAML> \
 --rm influxdb:2.0
 ```
 
