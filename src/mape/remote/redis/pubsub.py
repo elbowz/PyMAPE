@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import aioredis
+import logging
 from functools import partial
 from typing import Tuple, List, Dict, Callable
 
@@ -8,6 +10,7 @@ import mape
 from mape.remote.de_serializer import obj_from_raw, Pickled
 from mape.utils import log_task_exception, auto_task
 
+logger = logging.getLogger(__name__)
 
 def subscribe_handler_deco(channels_patterns, full_message=False, deserializer=None, redis=None):
     channels_patterns = channels_patterns if isinstance(channels_patterns, List) else [channels_patterns]
@@ -25,6 +28,10 @@ def subscribe_handler_deco(channels_patterns, full_message=False, deserializer=N
 
 def subscribe_handler(sub_handlers: Dict[str, Callable], full_message=False, deserializer=None, redis=None):
     redis = redis or mape.redis
+
+    if not isinstance(redis, aioredis.Redis):
+        logger.error("You are trying to use Redis without config it!")
+
     deserializer = deserializer or partial(obj_from_raw, Pickled)
 
     def _on_publish(message, callback):

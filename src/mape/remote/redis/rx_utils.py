@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import logging
+import aioredis
 from functools import partial
 
 import rx
@@ -17,6 +19,8 @@ from mape.utils import log_task_exception
 from .pubsub import subscribe_handler
 from ..de_serializer import obj_to_raw, Pickled
 
+logger = logging.getLogger(__name__)
+
 
 class PubObserver(Observer):
 
@@ -25,6 +29,9 @@ class PubObserver(Observer):
         self._queue = asyncio.Queue()
         self._redis = redis or mape.redis
         self._serializer = serializer or partial(obj_to_raw, Pickled)
+
+        if not isinstance(self._redis, aioredis.Redis):
+            logger.error("You are trying to use Redis without config it!")
 
         self._p_in = Port(input=Subject(), operators=[ops.materialize()])
         self._p_in.pipe = self._p_in.input.pipe(*self._p_in.operators)

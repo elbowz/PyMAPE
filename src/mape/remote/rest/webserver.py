@@ -25,3 +25,7 @@ class UvicornDaemon:
     def stop(self):
         self._loop.create_task(self._server.shutdown())
 
+    @property
+    def config(self):
+        return self._server.config
+

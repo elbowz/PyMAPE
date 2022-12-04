@@ -10,7 +10,7 @@ from dataclasses import dataclass
 
 _datefmt = '%H:%M:%S'
 # _datefmt='%d %H:%M:%S'
-_fmt = '%(asctime)s.%(msecs)-3d %(threadShortName)-3s %(name)-20s: %(levelname)-8s %(message)s'
+_fmt = '%(asctime)s.%(msecs)-3d %(threadShortName)-3s %(name)-30s %(levelname)-8s %(message)s'
 #_fmt = '%(relativeCreated)-6d %(threadShortName)-3s %(name)-20s: %(levelname)-8s %(message)s'
 
 

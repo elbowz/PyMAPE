@@ -17,8 +17,8 @@ from .remote.rest import UvicornDaemon, setup as rest_setup
 from .remote.influxdb import set_config as set_influxdb
 from .utils import init_logger, task_exception
 
-# Please make sure the version here remains the same as in project.cfg
-__version__ = '0.0.1b'
+# Please make sure the version here remains the same as in pyproject.toml
+__version__ = '0.1.0a1'
 
 # Disable logging until user use logging.basicConfig()
 # TODO: remove logger initialization
@@ -73,11 +73,15 @@ def _start_web_server(host_port: str, loop):
 
         system_path = fastapi.routes[:init_len_routes]
         mape_path = fastapi.routes[init_len_routes:]
+        host_base_url = f"http://{uvicorn_webserver.config.host}:{uvicorn_webserver.config.port}"
 
-        logger.debug(f"System endpoints and API documentation: {','.join([route.path for route in system_path])}")
+        logger.info("APIs documentation:")
+        for route in system_path:
+            logger.info(f" * {host_base_url}{route.path}")
+
         logger.debug(f"Defined {len_routes - init_len_routes} REST MAPE endpoints:")
         for route in mape_path:
-            logger.debug(f" * {route.path}")
+            logger.debug(f" * {host_base_url}{route.path}")
 
         logger.info('Webserver started: No more endpoint can be added since now!')
 
@@ -92,7 +96,7 @@ def init(debug=False, asyncio_loop=None, redis_url=None, rest_host_port=None, co
     if config := mape_config.load(config_file):
         logger.info(f"{config_file} loaded")
     else:
-        logger.info(f"{config_file} not found, using default config")
+        logger.warning(f"{config_file} not found, using default config")
         config = mape_config.default
 
     mape_config.set('debug', debug)
@@ -153,14 +157,20 @@ def run(entrypoint: Union[Callable, Coroutine] = None):
 
 
 def set_debug(debug=False, asyncio_slow_callback_duration=0.1):
+    # TODO: better debug and logging level support (it don't works as expected...)
     log_lvl = logging.DEBUG if debug else logging.WARNING
 
-    aio_loop.set_debug(debug)
+    # Enabling it, sometimes asyncio throw errors like:
+    # "<_SelectorSocketTransport fd=11 read=polling write=<idle, bufsize=0>>: Fatal read error on socket transport"
+    # aio_loop.set_debug(debug)
+
     logging.getLogger(__name__).setLevel(log_lvl)
     logging.getLogger('asyncio').setLevel(log_lvl)
 
     if fastapi:
         fastapi.debug = debug
+        # Avoid double logging for uvicorn
+        logging.getLogger('uvicorn').handlers.clear()
 
     # Threshold for "slow" tasks.
     # Reduce to smaller value to throw the error and understand the behaviour.
