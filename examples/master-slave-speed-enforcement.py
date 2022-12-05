@@ -75,7 +75,7 @@ async def create_speed_enforcement_loop():
 
 
 async def create_car_loop(name, init_speed):
-    from examples.fixtures import VirtualCar
+    from fixtures import VirtualCar
 
     # Managed elements
     car = VirtualCar(name, speed=init_speed)
@@ -120,7 +120,10 @@ if __name__ == '__main__':
     logger.debug('START...')
 
     # CLI EXAMPLES
-    # * python -m examples.master-slave-speed-enforcement
+    # * python -m master-slave-speed-enforcement
+    #
+    # notes:
+    #   * "python -m master-slave-speed-enforcement" == "python master-slave-speed-enforcement.py" == "./master-slave-speed-enforcement.py"
 
     mape.init(debug=False)
     mape.run(entrypoint=async_main())

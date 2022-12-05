@@ -5,6 +5,7 @@ import time
 import logging
 import asyncio
 import numpy as np
+from os import path
 
 from typing import Callable, Any
 
@@ -127,7 +128,7 @@ class VirtualCarGenerator:
                  lanes=1,
                  max_car_enter=6,
                  max_car_exit=6,
-                 cars_file='examples/car_name.csv'
+                 cars_file=None
                  ) -> None:
         self._uid = uid
         self._cars: set = set()
@@ -135,6 +136,7 @@ class VirtualCarGenerator:
         self._max_car_enter = max_car_enter
         self._max_car_exit = max_car_exit
         self._callbacks: dict = {}
+        cars_file = cars_file or path.dirname(path.realpath(__file__)) + '/car_name.csv'
         self._car_names_pool = np.genfromtxt(cars_file, dtype='str')
 
         if auto_generation:

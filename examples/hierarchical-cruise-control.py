@@ -127,7 +127,7 @@ async def create_cruise_control(car):
 
 
 async def async_main():
-    from examples.fixtures import VirtualCarSpeed
+    from fixtures import VirtualCarSpeed
 
     # Managed elements
     car = VirtualCarSpeed('Panda', speed=0, max_power=70, max_break=70, position=0)
@@ -135,7 +135,6 @@ async def async_main():
 
     await create_cruise_control(car)
     await create_hold_distance(car, car_in_front)
-
     await create_cruise_control(car_in_front)
 
     # Stdin/key bindings setup for user input
@@ -143,7 +142,7 @@ async def async_main():
 
 
 def prompt_setup(planner):
-    from examples.utils import handle_prompt
+    from utils import handle_prompt
 
     def prompt_handler(value):
         if value in ['exit', 'close', 'stop']:
@@ -166,12 +165,18 @@ if __name__ == '__main__':
     logger.debug('START...')
 
     # CLI EXAMPLES
-    # * python -m examples.hierarchical-cruise-control
+    # * python -m hierarchical-cruise-control
+    #
+    # notes:
+    #   * "python -m hierarchical-cruise-control" == "python hierarchical-cruise-control.py" == "./hierarchical-cruise-control.py"
+    #   * Use F1/F2 keys to increase/reduce ahead car speed
+
+    from os import path
 
     init_kwargs = {}
     # init_kwargs = {'redis_url': 'redis://localhost:6379'}
     # init_kwargs = {**init_kwargs, 'rest_host_port': args.web_server} if args.web_server else init_kwargs
-    init_kwargs = {**init_kwargs, 'config_file': 'examples/coordinated.yml'}
+    init_kwargs = {**init_kwargs, 'config_file': path.dirname(path.realpath(__file__)) + '/coordinated.yml'}
 
     mape.init(debug=False, **init_kwargs)
     mape.run(entrypoint=async_main())

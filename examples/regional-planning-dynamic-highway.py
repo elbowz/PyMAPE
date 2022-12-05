@@ -132,7 +132,7 @@ async def async_main(name, count_lanes):
     await k_cars.clear()
 
     # Managed elements
-    from examples.fixtures import VirtualCarGenerator
+    from fixtures import VirtualCarGenerator
     cars_generator = VirtualCarGenerator(loop.uid, auto_generation=False, lanes=count_lanes)
     # Stdin/key bindings setup for user input
     prompt_setup(cars_generator)
@@ -143,7 +143,7 @@ async def async_main(name, count_lanes):
 
 
 def prompt_setup(cars_generator):
-    from examples.utils import handle_prompt
+    from utils import handle_prompt
 
     def prompt_handler(value):
         if value in ['exit', 'close', 'stop']:
@@ -167,8 +167,12 @@ if __name__ == '__main__':
 
     # CLI EXAMPLES
     # Redis:
-    # * python -m examples.regional-planning-dynamic-highway --name up --lanes 8
-    # * python -m examples.regional-planning-dynamic-highway --name down --lanes 8
+    # * python -m regional-planning-dynamic-highway --name up --lanes 8
+    # * python -m regional-planning-dynamic-highway --name down --lanes 8
+    #
+    # notes:
+    #   * "python -m regional-planning-dynamic-highway" == "python regional-planning-dynamic-highway.py" == "./regional-planning-dynamic-highway.py"
+    #   * Use F1/F2 keys to add/remove a car from lane
 
     import argparse
     parser = argparse.ArgumentParser(description='MAPE Loop')
@@ -176,8 +180,10 @@ if __name__ == '__main__':
     parser.add_argument('-l', '--lanes', type=int, metavar='LANES', default=4)
     args = parser.parse_args()
 
+    from os import path
+
     init_kwargs = {'redis_url': 'redis://localhost:6379'}
-    init_kwargs = {**init_kwargs, 'config_file': 'examples/coordinated.yml'}
+    init_kwargs = {**init_kwargs, 'config_file': path.dirname(path.realpath(__file__)) + '/coordinated.yml'}
 
     run_kwargs = {
         'name': args.name,
