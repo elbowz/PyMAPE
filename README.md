@@ -20,7 +20,7 @@
 pip install pymape
 ```
 
-See [Examples](#examples) for play with some MAPE-K patterns.
+See [Examples](https://github.com/elbowz/PyMAPE#examples) for play with some MAPE-K patterns.
 
 ### Install for Developers and Contributors
 
@@ -104,7 +104,7 @@ mape.app['loop_uid.element_uid']
 
 ### Slides
 
-[Introduction to PyMAPE](/docs/slides.pdf) with examples
+[Introduction to PyMAPE](https://github.com/elbowz/PyMAPE/raw/main/docs/slides.pdf) with examples
 
 ### Examples
 
@@ -118,7 +118,7 @@ Implementation of the 5 decentralized (and distributed) MAPE patterns described 
 
 If you want try some examples (path `examples/`), refer to section `# CLI EXAMPLES` inside the source code of each one.  
 
-The examples need furthers requirements, please see [pyproject.toml](https://github.com/elbowz/PyMAPE/raw/main/pyproject.toml) or use poetry to [install them](#Install_for_Developers_and_Contributors).  
+The examples need furthers requirements, please see [pyproject.toml](https://github.com/elbowz/PyMAPE/raw/main/pyproject.toml) or use poetry to [install them](https://github.com/elbowz/PyMAPE#install-for-developers-and-contributors).  
 
 You also need a Redis and InfluxDB instance running, for example:
 
