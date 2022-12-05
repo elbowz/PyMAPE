@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pymape"
-version = "0.1.0a1"
+version = "0.1.0a2"
 description = "Framework to develop Self-Adaptive system based on MAPE-K loop."
 license = "Apache-2.0"
 authors = ["Emanuele Palombo <muttley.bd@gmail.com>"]
