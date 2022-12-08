@@ -19,18 +19,18 @@ theme:
   name: material
   custom_dir: docs/overrides
   features:
-    # - announce.dismiss
+#     - announce.dismiss
     - content.code.annotate
-    # - content.tabs.link
-    # - content.tooltips # Sponsors only
-    # - header.autohide
-    # - navigation.expand
+#     - content.tabs.link
+#     - content.tooltips # Sponsors only
+#     - header.autohide
+#     - navigation.expand
     - navigation.indexes
-    # - navigation.instant
-    # - navigation.prune
+#     - navigation.instant
+#     - navigation.prune
     - navigation.sections
-    - navigation.tabs
-    # - navigation.tabs.sticky
+#    - navigation.tabs
+#    - navigation.tabs.sticky
     - navigation.top
     - navigation.tracking
     - search.highlight
@@ -124,7 +124,7 @@ extra:
     - icon: fontawesome/brands/github-alt
       link: https://github.com/elbowz/pymape
 
-## Custom theme additions
+# Custom theme additions
 extra_css:
   - css/termynal.css
   - css/custom.css
@@ -134,6 +134,8 @@ extra_javascript:
 
 # Page tree
 nav:
-  - Home: index.md
+  - Home:
+      - Home: index.md
+      - Concepts and Terminology: concepts.md
   - Getting started:
       - Installation: getting-started.md

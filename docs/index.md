@@ -1,0 +1,64 @@
+<p align="center">
+    <a href="https://pypi.org/project/pymape/"><img
+        src="https://img.shields.io/pypi/v/pymape?style=flat-square"
+        alt="PyPI Version"
+    /></a>
+    <a href="https://pypi.org/project/pymape/"><img
+        src="https://img.shields.io/pypi/pyversions/pymape?style=flat-square"
+        alt="Py Version"
+    /></a>
+    <a href="https://github.com/elbowz/pymape/issues"><img
+        src="https://img.shields.io/github/issues/elbowz/pymape.svg?style=flat-square"
+        alt="Issues"
+    /></a>
+    <a href="https://raw.githubusercontent.com/elbowz/PyMAPE/main/LICENSE"><img
+        src="https://img.shields.io/github/license/elbowz/pymape.svg?style=flat-square"
+        alt="GPL License"
+    /></a>
+    <a href="https://raw.githubusercontent.com/elbowz/PyMAPE/main/LICENSE"><img
+        src="https://img.shields.io/static/v1?label=Powered&message=RxPY&style=flat-square&color=informational"
+        alt="RxPY"
+    /></a>
+</p>
+
+<p align="center">
+    <img src="https://github.com/elbowz/PyMAPE/raw/main/docs/img/logo.png" alt="PyMAPE" width="400">
+    <h4 align="center">Distributed and decentralized MonitorAnalyzePlanExecute-Knowledge loops framework</h3>
+    <p align="center">
+        Framework to support the development and deployment of Autonomous (Self-Adaptive) Systems
+    </p>
+</p>
+
+---
+
+* __Source Code__: [https://github.com/elbowz/PyMAPE]()
+* __Documentation__: [https://elbowz.github.io/PyMAPE]()
+
+---
+
+## Key features
+
+:   :material-numeric-1-circle-outline: __CONTAINMENT__   
+    Reuse, modularity and isolation of MAPE components as __first-class entity__.
+
+:   :material-numeric-2-circle-outline: __COMMUNICATION INTERFACE (STANDARDIZATION)__   
+    Shared interface between components that allow __stream__ communication, filtering, pre/post processing, data exchange communication and routing.
+
+:   :material-numeric-3-circle-outline: __DISTRIBUTION__   
+    Multi-device distribution of MAPE loops and components.
+
+:   :material-numeric-4-circle-outline: __DECENTRALIZED PATTERNS__   
+    __Flat__ p2p and/or __hierarchical__ architectures of loops and components with concerns separation. Allowing runtime pattern reconfiguration (stopping/starting, (un)linking, adding/removing).
+
+:   :material-numeric-5-circle-outline: __NETWORK COMMUNICATION PARADIGMS__   
+    Different paradigms (blackboard, direct message) and protocols for various patterns interactions.
+
+:   :material-numeric-6-circle-outline: __STATE / KNOWLEDGE__   
+    Distributed __multi-scope__ (global, level, loop) Knowledge with partitioning and/or (full/partial async) replication.
+
+!!! tip
+
+    If you already know what is a Self-Adaptive system, a MAPE-K loop and related patterns:
+
+    [Getting Started :material-arrow-right:](getting-started.md){ .md-button }
+ 

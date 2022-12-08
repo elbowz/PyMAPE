@@ -7,7 +7,7 @@ authors = ["Emanuele Palombo <muttley.bd@gmail.com>"]
 readme = "README.md"
 #homepage = ""
 repository = "https://github.com/elbowz/PyMAPE"
-#documentation = ""
+documentation = "https://elbowz.github.io/PyMAPE/"
 keywords = ["mape","mapek", "mape-k", "self-adaptive", "autonomus system"]
 classifiers = [
     "Topic :: Scientific/Engineering",
