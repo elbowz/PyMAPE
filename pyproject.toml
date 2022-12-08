@@ -2,7 +2,7 @@
 name = "pymape"
 version = "0.1.0a2"
 description = "Framework to develop Self-Adaptive system based on MAPE-K loop."
-license = "Apache-2.0"
+license = "GPL-3.0-only"
 authors = ["Emanuele Palombo <muttley.bd@gmail.com>"]
 readme = "README.md"
 #homepage = ""
@@ -49,6 +49,10 @@ all = ["aiohttp", "fastapi", "uvicorn", "redis-purse", "influxdb-client"]
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^2.20.0"
 pytest = "^7.2.0"
+mkdocs = "^1.4.2"
+mkdocs-material = "^8.5.11"
+mkdocs-minify-plugin = "^0.6.2"
+mkdocs-git-revision-date-localized-plugin = "^1.1.0"
 
 [tool.poetry.group.examples.dependencies]
 numpy = "^1.22.0"

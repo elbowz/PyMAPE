@@ -1,10 +1,12 @@
+[![PyPI Version][pypi-shield]][pypi-url]
+[![Py Version][pyversion-shield]][pypi-url]
 [![Issues][issues-shield]][issues-url]
 [![GPL License][license-shield]][license-url]
 [![Homie][rxpy-shield]][rxpy-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
 <p align="center">
-  <img src="https://github.com/elbowz/PyMAPE/raw/main/docs/imgs/logo.png" alt="PyMAPE" width="400">
+  <img src="https://github.com/elbowz/PyMAPE/raw/main/docs/img/logo.png" alt="PyMAPE" width="400">
   <h3 align="center">Decentralized Monitor Analyze Plan Execute Knowledge loops</h3>
   <p align="center">
     Software framework to support the development and deployment of Autonomous (Self-Adaptive) Systems
@@ -35,7 +37,7 @@ Then use `poetry shell` and/or `poetry run` (eg. `poetry run examples/coordinate
 
 ### First loop (Ambulance)
 
-![ambulance diagram](https://github.com/elbowz/PyMAPE/raw/main/docs/imgs/mape_ambulance.png)
+![ambulance diagram](https://github.com/elbowz/PyMAPE/raw/main/docs/img/mape-ambulance.png)
 
 ```python
 import mape
@@ -144,6 +146,9 @@ docker run --name mape-influxdb -p 8086:8086 \
 
 See source for more information.
 
+[pypi-shield]: https://img.shields.io/pypi/v/pymape?style=for-the-badge
+[pypi-url]: https://pypi.org/project/pymape/
+[pyversion-shield]: https://img.shields.io/pypi/pyversions/pymape?style=for-the-badge
 [issues-shield]: https://img.shields.io/github/issues/elbowz/pymape.svg?style=for-the-badge
 [issues-url]: https://github.com/elbowz/pymape/issues
 [license-shield]: https://img.shields.io/github/license/elbowz/pymape.svg?style=for-the-badge

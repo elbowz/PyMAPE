@@ -1,0 +1,30 @@
+.termynal-comment {
+  color: #4a968f;
+  font-style: italic;
+  display: block;
+}
+
+.termy {
+  /* For right to left languages */
+  direction: ltr;
+}
+
+.termy [data-termynal] {
+  white-space: pre-wrap;
+}
+
+.md-source-file {
+  margin: 1em 0;
+}
+
+[dir=ltr] .md-source-file__fact {
+  margin-right: 0.6rem;
+}
+
+.md-source-file__fact {
+  align-items: center;
+  color: var(--md-default-fg-color--light);
+  display: inline-flex;
+  font-size: .68rem;
+  gap: 0.3rem;
+}
