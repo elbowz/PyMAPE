@@ -9,6 +9,7 @@ site_description: >-
 # Repository
 repo_name: elbowz/PyMAPE
 repo_url: https://github.com/elbowz/PyMAPE
+edit_uri: edit/main/docs/
 #edit_uri: ''  #disables edit button
 
 # Copyright
@@ -41,15 +42,15 @@ theme:
   palette:
     - media: '(prefers-color-scheme: light)'
       scheme: default
-#      primary: amber
-#      accent: yellow
+#      primary: indigo
+#      accent: indigo
       toggle:
         icon: material/lightbulb
         name: Switch to dark mode
     - media: '(prefers-color-scheme: dark)'
       scheme: slate
-#      primary: amber
-#      accent: yellow
+      primary: amber
+      accent: indigo
       toggle:
         icon: material/lightbulb-outline
         name: Switch to light mode
