@@ -1,16 +1,32 @@
-[![PyPI Version][pypi-shield]][pypi-url]
-[![Py Version][pyversion-shield]][pypi-url]
-[![Issues][issues-shield]][issues-url]
-[![GPL License][license-shield]][license-url]
-[![Homie][rxpy-shield]][rxpy-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
+<p align="center">
+    <a href="https://pypi.org/project/pymape/"><img
+        src="https://img.shields.io/pypi/v/pymape?style=flat-square"
+        alt="PyPI Version"
+    /></a>
+    <a href="https://pypi.org/project/pymape/"><img
+        src="https://img.shields.io/pypi/pyversions/pymape?style=flat-square"
+        alt="Py Version"
+    /></a>
+    <a href="https://github.com/elbowz/pymape/issues"><img
+        src="https://img.shields.io/github/issues/elbowz/pymape.svg?style=flat-square"
+        alt="Issues"
+    /></a>
+    <a href="https://raw.githubusercontent.com/elbowz/PyMAPE/main/LICENSE"><img
+        src="https://img.shields.io/github/license/elbowz/pymape.svg?style=flat-square"
+        alt="GPL License"
+    /></a>
+    <a href="https://raw.githubusercontent.com/elbowz/PyMAPE/main/LICENSE"><img
+        src="https://img.shields.io/static/v1?label=Powered&message=RxPY&style=flat-square&color=informational"
+        alt="RxPY"
+    /></a>
+</p>
 
 <p align="center">
-  <img src="https://github.com/elbowz/PyMAPE/raw/main/docs/img/logo.png" alt="PyMAPE" width="400">
-  <h3 align="center">Decentralized Monitor Analyze Plan Execute Knowledge loops</h3>
-  <p align="center">
-    Software framework to support the development and deployment of Autonomous (Self-Adaptive) Systems
-  </p>
+    <img src="https://github.com/elbowz/PyMAPE/raw/main/docs/img/logo.png" alt="PyMAPE" width="400">
+    <h4 align="center">Distributed and decentralized MonitorAnalyzePlanExecute-Knowledge loops framework</h3>
+    <p align="center">
+        Framework to support the development and deployment of Autonomous (Self-Adaptive) Systems
+    </p>
 </p>
 <br />
 
@@ -145,15 +161,3 @@ docker run --name mape-influxdb -p 8086:8086 \
 ```
 
 See source for more information.
-
-[pypi-shield]: https://img.shields.io/pypi/v/pymape?style=for-the-badge
-[pypi-url]: https://pypi.org/project/pymape/
-[pyversion-shield]: https://img.shields.io/pypi/pyversions/pymape?style=for-the-badge
-[issues-shield]: https://img.shields.io/github/issues/elbowz/pymape.svg?style=for-the-badge
-[issues-url]: https://github.com/elbowz/pymape/issues
-[license-shield]: https://img.shields.io/github/license/elbowz/pymape.svg?style=for-the-badge
-[license-url]: /LICENSE
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://www.linkedin.com/in/emanuele-palombo/
-[rxpy-shield]: https://img.shields.io/static/v1?label=Powered&message=RxPY&style=for-the-badge&color=informational
-[rxpy-url]: https://github.com/ReactiveX/RxPY
