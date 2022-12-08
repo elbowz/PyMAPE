@@ -2,12 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://elbowz.github.io/PyMAPE/</loc>
-         <lastmod>2022-12-07</lastmod>
+         <lastmod>2022-12-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://elbowz.github.io/PyMAPE/about/</loc>
-         <lastmod>2022-12-07</lastmod>
+         <loc>https://elbowz.github.io/PyMAPE/concepts/</loc>
+         <lastmod>2022-12-08</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://elbowz.github.io/PyMAPE/getting-started/</loc>
+         <lastmod>2022-12-08</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://elbowz.github.io/PyMAPE/typography/</loc>
+         <lastmod>2022-12-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
