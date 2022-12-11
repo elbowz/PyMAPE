@@ -36,6 +36,18 @@
 
 ---
 
+## Requirements
+
+* Python 3.8+
+* [RxPY](https://github.com/ReactiveX/RxPY)
+* [PyYAML](https://github.com/yaml/pyyaml)
+* [AIOHTTP](https://github.com/aio-libs/aiohttp)
+* [FastAPI](https://github.com/tiangolo/fastapi)
+* [Uvicorn](https://github.com/encode/uvicorn)
+* [Redis-purse](https://github.com/plataux/purse)
+* [Influxdb-client](https://github.com/influxdata/influxdb-client-python)
+
+
 ## Key features
 
 :   :material-numeric-1-circle-outline: __CONTAINMENT__   
@@ -55,6 +67,21 @@
 
 :   :material-numeric-6-circle-outline: __STATE / KNOWLEDGE__   
     Distributed __multi-scope__ (global, level, loop) Knowledge with partitioning and/or (full/partial async) replication.
+
+## Paradigms and tools
+
+:   :material-numeric-1-circle: __REACTIVE SYSTEM/PROGRAMMING AND STREAM__   
+    System reactive to __external__ event. Pillars: Responsive, Resilient, Elastic and __Message Driven__. Specific case of event-driven programming to avoid callback hell.
+
+:   :material-numeric-2-circle: __REACTIVEX (OBSERVER PATTERN)__   
+    Observables represent a __source__ of events. An __observer__ subscribes to an observable to receive items emitted (Hot, Cold, Subject,etc). __Pipe operators__ modify streams flowing through them.
+
+:   :material-numeric-3-circle: __ASYNCHRONOUS PROGRAMMING__   
+    Manage (I/O bound) tasks concurrency with non-blocking I/O operations.
+
+:   :material-numeric-4-circle: __REDIS, IN-MEMORY DATA STRUCTURE SERVER__   
+    __Distributed__, in-memory key-value data structure (strings, hashes, lists, (ordered) sets, queue, lock) store, cache and __message broker__ with keyspace __notifications__. Partitioning and/or (full/partial async) replication.
+
 
 !!! tip
 

@@ -44,6 +44,8 @@ Different __patterns__ of interacting control loops have been used in practice b
 
     Further and deeply information about different patterns related to decentralized and distributed system can be found in the paper ["On Patterns for Decentralized Control in Self-Adaptive Systems", Danny Weyns](https://www.ics.uci.edu/~seal/publications/2012aSefSAS.pdf)
 
+In the next sections of documentations, we will see these patterns through the implementation of some ad-hoc examples. Discovering different approaches, trade-off, and of course the PyMAPE framework.
+
 [^1]: _"A survey on engineering approaches for self-adaptive systems"_, C. Krupitzer, F. M. Roth, S. VanSyckel, G. Schiele, and C. Becker
 [^2]: _"An architectural blueprint for autonomic computing"_, IBM White Paper, vol. 31, no. 2006
 [^3]: _"On Patterns for Decentralized Control in Self-Adaptive Systems"_, D. Weyns, B. Schmerl, V. Grassi, S. Malek, R. Mirandola, C. Prehofer, J. Wuttke, J. Andersson, H. Giese, and K. M. Göschka
