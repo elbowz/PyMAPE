@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "pymape"
-version = "0.1.0a2"
+version = "0.1.0a4"
 description = "Framework to develop Self-Adaptive system based on MAPE-K loop."
 license = "GPL-3.0-only"
 authors = ["Emanuele Palombo <muttley.bd@gmail.com>"]
 readme = "README.md"
-#homepage = ""
+homepage = "https://elbowz.github.io/PyMAPE/"
 repository = "https://github.com/elbowz/PyMAPE"
 documentation = "https://elbowz.github.io/PyMAPE/"
 keywords = ["mape","mapek", "mape-k", "self-adaptive", "autonomus system"]
@@ -20,30 +20,29 @@ packages = [
     { include = "mape", from = "src" },
 ]
 
-
 [tool.poetry.dependencies]
 # These packages are mandatory and form the core of this package’s distribution.
 python = "^3.8"
 Rx = "^3.2.0"
 PyYAML = "^6.0"
 
-# A list of all of the optional dependencies, which are included in the
-# below `extras`. They can be opted into by apps.
+# Dependency for remote stream and storage
 # TODO: refactor code and set "optional = true", allowing the user to choose what use and install
-aiohttp = { version = "^3.8.1", optional = false }
-fastapi = { version = "^0.73", optional = false }
-uvicorn = { version = "^0.17.4", optional = false }
-redis-purse = { version = "~0.25.0", optional = false }
-influxdb-client = { version = "^1.26.0", optional = false }
+# eg. aiohttp = { version = "^3.8.1", optional = false }
+aiohttp = "^3.8.1"
+fastapi = "^0.73"
+uvicorn = "^0.17.4"
+redis-purse = "~0.25.0"
+influxdb-client = "^1.26.0"
 
 # Extras can be installed by the end user using pip.
-[tool.poetry.extras]
-rest-client = ["aiohttp"]
-rest-server = ["fastapi", "uvicorn"]
-rest = ["aiohttp", "fastapi", "uvicorn"]
-redis-client = ["redis-purse"]
-influxdb-client = ["influxdb-client"]
-all = ["aiohttp", "fastapi", "uvicorn", "redis-purse", "influxdb-client"]
+#[tool.poetry.extras]
+#rest-client = ["aiohttp"]
+#rest-server = ["fastapi", "uvicorn"]
+#rest = ["aiohttp", "fastapi", "uvicorn"]
+#redis-client = ["redis-purse"]
+#influxdb-client = ["influxdb-client"]
+#all = ["aiohttp", "fastapi", "uvicorn", "redis-purse", "influxdb-client"]
 
 # Dependency groups, other than the implicit main group, must only contain dependencies you need in your development process. Installing them is only possible by using Poetry.
 [tool.poetry.group.dev.dependencies]
