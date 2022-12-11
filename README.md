@@ -31,8 +31,8 @@
 
 ---
 
-* __Source Code__: [https://github.com/elbowz/PyMAPE]()
-* __Documentation__: [https://elbowz.github.io/PyMAPE]() (WIP)
+* __Source Code__: [https://github.com/elbowz/PyMAPE](https://github.com/elbowz/PyMAPE)
+* __Documentation__: [https://elbowz.github.io/PyMAPE](https://elbowz.github.io/PyMAPE) - _WIP_
 
 ---
 

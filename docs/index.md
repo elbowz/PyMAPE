@@ -31,8 +31,8 @@
 
 ---
 
-* __Source Code__: [https://github.com/elbowz/PyMAPE]()
-* __Documentation__: [https://elbowz.github.io/PyMAPE]()
+* __Source Code__: [https://github.com/elbowz/PyMAPE](https://github.com/elbowz/PyMAPE)
+* __Documentation__: [https://elbowz.github.io/PyMAPE](https://elbowz.github.io/PyMAPE) - _WIP_
 
 ---
 
@@ -87,5 +87,5 @@
 
     If you already know what is a Self-Adaptive system, a MAPE-K loop and related patterns:
 
-    [Getting Started :material-arrow-right:](getting-started.md){ .md-button }
+    [Getting Started :material-arrow-right:](getting-started/index.md){ .md-button }
  
