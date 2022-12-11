@@ -159,6 +159,7 @@ class Element(Observable, Observer, rx_typing.Subject):
             self._p_in.pipe = self._p_in.input.pipe(
                 ops.filter(lambda item: not isinstance(item, typing.CallMethod)),
                 ops.do_action(lambda item: isinstance(item, typing.Message) and item.add_hop(self)),
+                #ops.do_action(lambda item: print("DEBUG" + str(item))),
                 *self._p_in.operators
             )
 
