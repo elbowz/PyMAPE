@@ -2,7 +2,6 @@
   text-align: center;
 }
 
-
 .termynal-comment {
   color: #4a968f;
   font-style: italic;
@@ -15,6 +14,7 @@
 }
 
 .termy [data-termynal] {
+  width: auto !important;
   white-space: pre-wrap;
 }
 
