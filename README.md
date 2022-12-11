@@ -28,103 +28,21 @@
         Framework to support the development and deployment of Autonomous (Self-Adaptive) Systems
     </p>
 </p>
-<br />
 
-## Getting Started
+---
 
-### Install
+* __Source Code__: [https://github.com/elbowz/PyMAPE]()
+* __Documentation__: [https://elbowz.github.io/PyMAPE]() (WIP)
+
+---
+
+## Install
 
 ```bash
 pip install pymape
 ```
 
-See [Examples](https://github.com/elbowz/PyMAPE#examples) for play with some MAPE-K patterns.
-
-### Install for Developers and Contributors
-
-```bash
-git clone https://github.com/elbowz/PyMAPE.git
-cd PyMAPE
-poetry install
-```
-*note:* you need to have already installed [poetry](https://python-poetry.org/)
-
-Then use `poetry shell` and/or `poetry run` (eg. `poetry run examples/coordinated-ambulance.py --speed 80`) to exec your script inside the development environment.
-
-### First loop (Ambulance)
-
-![ambulance diagram](https://github.com/elbowz/PyMAPE/raw/main/docs/img/mape-ambulance.png)
-
-```python
-import mape
-from mape.loop import Loop
-
-""" MAPE Loop and elements definition """
-loop = Loop(uid='ambulance_emergency')
-
-@loop.monitor
-def detect(item, on_next, self):
-    if 'speed_limit' in item:
-        # Local volatile knowledge
-        self.loop.k.speed_limit = item['speed_limit']
-    elif 'emergency_detect' in item:
-        on_next(item['emergency_detect'])
-
-@loop.plan(ops_in=ops.distinct_until_changed())
-async def policy(emergency, on_next, self):
-    if emergency is True:
-        self.last_speed_limit = self.loop.k.speed_limit
-        new_speed = max(self.last_speed_limit, self.emergency_speed)
-
-        on_next({'speed': new_speed})
-        on_next({'siren': True})
-    else:
-        on_next({'speed': self.last_speed_limit})
-        on_next({'siren': False})
-
-policy.emergency_speed = 160
-
-@loop.execute
-def exec(item: dict, on_next):
-    if 'speed' in item:
-        ambulance.speed_limit = item['speed']
-    if 'siren' in item:
-        ambulance.siren = item['siren']
-
-for element in loop:
-    element.debug(Element.Debug.IN)
-
-""" MAPE Elements connection """
-detect.subscribe(policy)
-policy.subscribe(exec)
-
-# Starting monitor...
-detect.start()
-```
-### Traversing
-
-```python
-# Iterate over loops and element
-for loop in mape.app:
-    logger.debug(f"* {loop.uid}")
-    for element in loop:
-        logger.debug(f" - {element.uid}")
-
-# Get all Execute elements
-[element for element in loop_obj if isinstance(element, Execute)]
-
-# Different access way to loop/element through dot-notation (path)
-mape.app.loop_uid.element_uid
-mape.app['loop_uid.element_uid']
-```
-
-## Docs
-
-### Slides
-
-[Introduction to PyMAPE](https://github.com/elbowz/PyMAPE/raw/main/docs/slides.pdf) with examples
-
-### Examples
+## Examples
 
 Implementation of the 5 decentralized (and distributed) MAPE patterns described in the paper:  
 ["On Patterns for Decentralized Control in Self-Adaptive Systems", Danny Weyns](https://www.ics.uci.edu/~seal/publications/2012aSefSAS.pdf)
@@ -134,7 +52,9 @@ Implementation of the 5 decentralized (and distributed) MAPE patterns described 
 * **Dynamic Carriageway** (Regional Planning)
 * **Cruise Control with Distance Hold** (Hierarchical Control)
 
-If you want try some examples (path `examples/`), refer to section `# CLI EXAMPLES` inside the source code of each one.  
+If you want try some examples (path `examples/`), refer to section `# CLI EXAMPLES` inside the source code of each one.
+
+[Slide - Introduction to PyMAPE](https://github.com/elbowz/PyMAPE/raw/main/docs/slides.pdf) with examples
 
 The examples need furthers requirements, please see [pyproject.toml](https://github.com/elbowz/PyMAPE/raw/main/pyproject.toml) or use poetry to [install them](https://github.com/elbowz/PyMAPE#install-for-developers-and-contributors).  
 
