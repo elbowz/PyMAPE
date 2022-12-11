@@ -1,0 +1,4 @@
+numpy==1.22.0
+prompt-toolkit==3.0.24
+asyncstdlib==3.10.3
+simple-pid==1.0.1
