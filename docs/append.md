@@ -1,0 +1,1 @@
+<!-- ADD HERE ALL WHAT YOU WANT APPEND TO ALL .MD FILES (eg. a glossary) -->
