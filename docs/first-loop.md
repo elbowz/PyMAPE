@@ -8,7 +8,7 @@ You'll implement this simple `ambulance` loop, composed of 3 connected elements:
 * Planner `custom_policy`
 * Executer `exec`
 
-![bare ambulance mape diagram](assets/img/mape-ambulance-bare.png){ style="background-color: white;" }
+![bare ambulance mape diagram](assets/img/mape-ambulance-bare.png){ .figure }
 
 In the next sections this graphical notation will be more clear.
 

@@ -2,7 +2,7 @@ To know the entities that compose PyMAPE, and their relationships, you can see a
 
 ## Metamodel
 
-![PyMAPE metamodel](../assets/img/metamodel.png){ style="background-color: white;" }
+![PyMAPE metamodel](../assets/img/metamodel.png){ .figure }
 
 ## Entities
 

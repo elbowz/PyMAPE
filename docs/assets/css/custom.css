@@ -2,6 +2,10 @@
   text-align: center;
 }
 
+.figure {
+  background-color: white;
+}
+
 .termynal-comment {
   color: #4a968f;
   font-style: italic;

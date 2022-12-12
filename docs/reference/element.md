@@ -3,7 +3,7 @@ L'`Element` is the central part of the framework. It will have to communicate wi
 ## Internal view
 
 Let's look inside an Element and try to understand how it works:
-![Element exploded](../assets/img/notation_element_exploded.png){ style="background-color: white;" }
+![Element exploded](../assets/img/notation_element_exploded.png){ .figure }
 
 ## Start behaviors
 
