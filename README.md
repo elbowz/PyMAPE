@@ -22,7 +22,7 @@
 </p>
 
 <p align="center">
-    <img src="https://github.com/elbowz/PyMAPE/raw/main/docs/img/logo.png" alt="PyMAPE" width="400">
+    <img src="https://github.com/elbowz/PyMAPE/raw/main/docs/assets/img/logo.png" alt="PyMAPE" width="400">
     <h4 align="center">Distributed and decentralized MonitorAnalyzePlanExecute-Knowledge loops framework</h3>
     <p align="center">
         Framework to support the development and deployment of Autonomous (Self-Adaptive) Systems
