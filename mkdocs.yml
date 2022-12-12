@@ -146,6 +146,6 @@ nav:
     - First loop: first-loop.md
   - Reference:
       - Main entities: reference/entities.md
-      - Element: typography.md
-      - Graphical notation: typography.md
+      - Element: reference/element.md
+      - Graphical notation: reference/graphical-notation.md
       - Remote package: typography.md
