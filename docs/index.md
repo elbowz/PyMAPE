@@ -22,7 +22,7 @@
 </p>
 
 <p align="center">
-    <img src="https://github.com/elbowz/PyMAPE/raw/main/docs/img/logo.png" alt="PyMAPE" width="400">
+    <img src="https://github.com/elbowz/PyMAPE/raw/main/docs/assets/img/logo.png" alt="PyMAPE" width="400">
     <h4 align="center">Distributed and decentralized MonitorAnalyzePlanExecute-Knowledge loops framework</h3>
     <p align="center">
         Framework to support the development and deployment of Autonomous (Self-Adaptive) Systems
@@ -85,7 +85,7 @@
 
 !!! tip
 
-    If you already know what is a Self-Adaptive system, a MAPE-K loop and related patterns:
+    If you already know what is a Self-Adaptive system, a MAPE-K loop and related patterns, jump to:
 
-    [Getting Started :material-arrow-right:](getting-started/index.md){ .md-button }
+    [Installation :material-arrow-right:](installation.md){ .md-button }
  

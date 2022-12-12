@@ -10,7 +10,7 @@ A system could be made Self-Adaptive by adding __sensors__ to monitor its runtim
 
 This was famously referred to as the MAPE-K loop, or __Monitor-Analyze-Plan-Execute__ using a shared base of __Knowledge__ [^2]. This architecture exposes explicitly the concept of __feedback control loop__ and indentify the components and interfaces.
 
-![MAPE-L loop](img/mape-k.png){ style="background-color: white;" }
+![MAPE-L loop](assets/img/mape-k.png){ style="background-color: white;" }
 
 `Monitor`
 

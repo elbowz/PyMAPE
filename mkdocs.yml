@@ -18,7 +18,7 @@ copyright: Copyright &copy; 2022 - 2023 Emanuele Palombo
 # Configuration
 theme:
   name: material
-  custom_dir: docs/overrides
+  custom_dir: docs/assets/overrides
   features:
 #    - announce.dismiss
     - content.code.annotate
@@ -127,17 +127,22 @@ extra:
 
 # Custom theme additions
 extra_css:
-  - css/termynal.css
-  - css/custom.css
+  - assets/css/termynal.css
+  - assets/css/custom.css
 extra_javascript:
-  - js/termynal.js
-  - js/custom.js
+  - assets/js/termynal.js
+  - assets/js/custom.js
 
 # Page tree
 nav:
   - Home:
     - Home: index.md
     - Concepts and Terminology: concepts.md
-  - Getting started:
-    - Installation: getting-started/index.md
-    - First loop: getting-started/first-loop.md
+    - Installation: installation.md
+    - First loop: first-loop.md
+  - Reference:
+      - Main entities: reference/entities.md
+      - Element: typography.md
+      - Graphical notation: typography.md
+      - Remote package: typography.md
+      - Configuration: typography.md

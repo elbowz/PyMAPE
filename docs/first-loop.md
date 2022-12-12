@@ -2,12 +2,22 @@ Let's write your first MAPE loop. You'll write a simplified loop of an ambulance
 
 ## Ambulance loop
 
+You'll implement this simple `ambulance` loop, composed of 3 connected elements:
+
+* Monitor `detect`
+* Planner `custom_policy`
+* Executer `exec`
+
+![bare ambulance mape diagram](assets/img/mape-ambulance-bare.png){ style="background-color: white;" }
+
+In the next sections this graphical notation will be more clear.
+
 ```python
 import mape
 
 mape.init() # (1)
 
-# Our ambulance loop definition, named "ambulance"
+# Ambulance loop definition, named "ambulance"
 loop = mape.Loop(uid='ambulance') # (2)
 
 # Monitor element of ambulance loop
@@ -21,13 +31,13 @@ def detect(emergency, on_next): # (4)
 3.  Decorator create and register the new element monitor to the ambulance `loop`.
 4.  The function name `#!py detect` is used as `uid` of our element inside the ambulance loop.
 
-So, we have a loop (`ambulance`) made up of a single monitor element called `detect`.
+A this point, you have a loop (`ambulance`) made up of a single monitor element called `detect`.
 
 ??? info "Loop and Element `uid`"
 
     Loop uid `ambulance` must be unique in the whole app, instead `detect` (monitor uid) must be so only within the loop to which it belongs. This allow to address an element by its path (eg. `ambulance.detect`). 
 
-`#!py detect()` function is the monitor element. It accepts at least two params:
+`#!py detect()` function is the monitor element. It accepts at least two positional params:
 
 * __stream item__ (`emergency`) - the value in input of an element. The elements talk with each other by streams as [ReactiveX] philosophy.
 * __on_next__ - is the function to call with the value to pass to the next linked elements (`#!py subscribed()`). It can be called 0 or N times, you haven't to confused with the function `#!py return`.
@@ -140,7 +150,7 @@ Inspired by the functional programming, there are plenty [operators] available i
 
 There are more than 140 operators (about 400 variants), and we advise and encourage the creation of your custom operators following your need.
 
-### Filter
+### Filters
 
 In the ambulance example there is an issue. If the monitor collect an emergency multiple time, all the following element (planner and executer) are invoked. 
 
