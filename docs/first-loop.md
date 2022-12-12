@@ -116,10 +116,12 @@ This is the wanted behaviour, because you have to start element `detect` wheneve
 ??? info "Different elements behaviour"
 
     Elements can have 3 different behaviours respect to the stream passing through them:
-  
-    * __manual start__ (_monitor_): the element cannot send or receive items until the `.start()` method invocation. This is often related to internal resource lifetime (eg. DB connection, socket, ...). This allow to connect all loops and elements before start receiving the stream.
-    * __start on subscribe__ (_analyzer, planner_): the element will be started when someone is interested to it (ie. `subscribed()`).
-    * __start on init__ (_executer_): the element is ready from its initialization.
+    
+    <!-- Same text in reference/entities.md -->
+
+    * :fontawesome-solid-pause: __manual start__ (_monitor_): the element cannot send or receive items until the `.start()` method invocation. This is often related to internal resource lifetime (eg. DB connection, socket, ...). It allows to connect all loops and elements before start receiving the stream.
+    * :fontawesome-solid-forward: __start on subscribe__ (_analyzer, planner_): the element will be started when someone is interested to it (ie. `subscribed()`).
+    * :fontawesome-solid-play: __start on init__ (_executer_): the element is ready from its initialization.
 
 So, we start the monitor element and simulate an emergency:
 
@@ -211,7 +213,6 @@ To solve the problem, we can put a `filter` at the __input__ of planner (or the 
 
     Ambulance can be not the best example to understand the use of `#!py distinct_until_changed()`, but try to image a monitor that use polling to read state of managed system. The values read can be the same until the system change the state (eg. motion detection, ambient temprature, ...).
 
-[operators]: https://rxpy.readthedocs.io/en/latest/operators.html
 [distinct_until_changed]: https://rxpy.readthedocs.io/en/latest/reference_operators.html#reactivex.operators.distinct_until_changed
 
 ## Loop and Element access

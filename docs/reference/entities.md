@@ -1,6 +1,10 @@
-To know the entities that compose PyMAPE, and their relationships, you can see a shrink version of its metamodel:
+To know the entities that compose PyMAPE, and their relationships, you can see a shrink version of its metamodel.
+
+## Metamodel
 
 ![PyMAPE metamodel](../assets/img/metamodel.png){ style="background-color: white;" }
+
+## Entities
 
 Explore the entities (used to develop your loops), starting from left to right:
 
