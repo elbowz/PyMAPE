@@ -286,6 +286,14 @@ You can print the __in__ and/or __out__ items stream of an element:
     element.debug(Element.Debug.IN | Element.Debug.OUT)
     ```
 
+=== "Disable"
+
+    ```python
+    element.debug() # (1)
+    ```
+    
+    1. `#!py element.debug(Element.Debug.DISABLE)` is equivalent
+
 ??? note "Sample debug output"
     `#!py detect(True)`
 
