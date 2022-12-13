@@ -147,5 +147,5 @@ nav:
   - Reference:
       - Main entities: reference/entities.md
       - Element: reference/element.md
+      - Remote package: reference/remote.md
       - Graphical notation: reference/graphical-notation.md
-      - Remote package: typography.md
