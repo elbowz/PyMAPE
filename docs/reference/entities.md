@@ -20,9 +20,34 @@ Explore the entities (used to develop your loops), starting from left to right:
 * you have already seen the `loop_decorator` in the [First loop] section, used to register elements to a loop.
 * `element_decorator` provides a set of decorators to define the Element class starting from a simple function. These decorators (as the above) are syntactic sugar to speed up development.
 
-
 !!! info
 
     Please refer to the [First loop] section and the following sections, to see how and when these entities are used.
+
+### `mape`
+
+* `#!py init(debug, asyncio_loop, redis_url, rest_host_port, config_file)`
+
+    `debug = False`
+     
+    :   Enable more verbose mode.
+    
+    `asyncio_loop = None`
+    
+    :   Provide your asyncio loop or leave PyMAPE to generate one for you.
+    
+    `redis_url = None`
+    
+    :   Url of your Redis instance (eg. `redis://localhost:6379`)
+    
+    `rest_host_port = None`
+    
+    :   Web server `host:port`, where some REST API endpoint will be provided (eg. `0.0.0.0:6060`).
+    
+    `config_file = mape.yml`
+    
+    :   Path (absolute or relative to working directory) to the config file. 
+
+
 
 [First loop]: ../first-loop.md
