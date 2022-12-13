@@ -310,3 +310,14 @@ Now you can use the class `InfluxObserver`, a sink to publish stream in [InfluxD
       )
     )
     ```
+
+#### ::: mape.remote.influxdb.InfluxObserver
+    options:
+      show_root_heading: true
+      show_root_full_path: true
+      show_signature: true
+      show_signature_annotations: true
+
+[InfluxObserver][mape.remote.influxdb.InfluxObserver]
+
+--8<-- "docs/append.md"

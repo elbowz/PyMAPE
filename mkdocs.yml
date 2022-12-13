@@ -75,6 +75,16 @@ plugins:
       enable_creation_date: true
       type: timeago
   - glightbox
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            # https://mkdocstrings.github.io/python-legacy/usage/#globallocal-options
+            show_source: true
+
+# Reload on change in followind directories
+watch:
+  - src
 
 # Extensions
 markdown_extensions:
