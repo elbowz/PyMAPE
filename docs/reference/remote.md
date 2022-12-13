@@ -285,9 +285,7 @@ Now you can use the class `InfluxObserver`, a sink to publish stream in [InfluxD
 
 ### Example
 
-<figure markdown>
-![Influxdb example](../assets/img/remote-influxdb.png){ .figure style="width: 300px" }
-</figure>
+![Influxdb example](../assets/img/remote-influxdb.png){ .figure .center style="width: 300px" }
 
 === "Auto"
 

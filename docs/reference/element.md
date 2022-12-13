@@ -58,8 +58,6 @@ If you send a `CallMethod` object (as item), thanks to its payload you can call 
 
 The framework trys also to introduce a graphical notation. In the figure below, you can see the final and imploded representation of an element.   
 
-<figure markdown>
-![Element graphical notation](../assets/img/notation-element-simple.png){ .figure style="width: 300px" }
-</figure>
+![Element graphical notation](../assets/img/notation-element-simple.png){ .figure .center style="width: 300px" }
 
 `Start behaviour`, `ports`, `pipe operators`, `uid`, and `class` element are still visible.

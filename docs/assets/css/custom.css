@@ -6,6 +6,11 @@
   background-color: white;
 }
 
+.figure.center {
+  display: block;
+  margin: 0 auto;
+}
+
 .termynal-comment {
   color: #4a968f;
   font-style: italic;
