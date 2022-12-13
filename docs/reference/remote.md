@@ -17,7 +17,7 @@ You can choose between:
 
 ### Graphical Notation
 
-![Remote package](../assets/img/remote-notation.png){ .figure }
+![Remote notation](../assets/img/remote-notation.png){ .figure }
 
 ## REST
 
@@ -74,7 +74,7 @@ Now you can get information about levels, loops, ad elements defined in your app
 
 In the following example you see a communication between two distributed devices (`Car_panda` and `Ambulance`), specifically between the port out of `detect` element of `car_panda` (`car_panda.detect`) and port in of `policy` element of `ambulance` (`ambulance.policy`).
 
-![Remote package](../assets/img/remote-rest-example.png){ .figure }
+![REST example](../assets/img/remote-rest-example.png){ .figure }
 
 Translated in python on device `Car_panda`
 
@@ -108,7 +108,7 @@ def policy(item, on_next):
 
 ## Redis
 
-For enable the Redis support you have to provide an url for your instance `redis://localhost:6379`. For do that you can:
+For enable the [Redis] support you have to provide an url for your instance `redis://localhost:6379`. For do that you can:
 
 === "init()"
 
@@ -125,7 +125,7 @@ For enable the Redis support you have to provide an url for your instance `redis
 
 ??? note "Redis instance"
 
-    PyMAPE doesn't provide (yet) an instance of Redis so you have to run your own, for example using a docker container:
+    PyMAPE doesn't provide (yet) an instance of [Redis] so you have to run your own, for example using a docker container:
 
     ``` {.console .termy}
     $ docker run --name mape-redis -p 6379:6379 -v $(pwd)/docker/redis:/usr/local/etc/redis --rm redis redis-server /usr/local/etc/redis/redis.conf
@@ -143,7 +143,7 @@ This mean that you have to choose a channel name, and publish/subscribe a stream
 
 ??? tip "Pattern matching"
 
-    Redis supports channel pattern matching, allowing multi-points communication.
+    [Redis] supports channel pattern matching, allowing multi-points communication.
 
     * `car_?.detect`: can receive from `car_a.detect`, `car_b.detect`, etc...
     * `car_[xy].detect`: can receive only from `car_x.detect`, `car_y.detect`
@@ -151,9 +151,9 @@ This mean that you have to choose a channel name, and publish/subscribe a stream
 
 ### Example
 
-Let's implement the previous example with Redis.
+Let's implement the previous example with [Redis].
 
-![Remote package](../assets/img/remote-redis-example.png){ .figure }
+![Redis example](../assets/img/remote-redis-example.png){ .figure }
 
 Translated in python on device `Car_panda`
 
@@ -190,4 +190,125 @@ def policy(item, on_next):
 SubObservable("car_*.detect").subscribe(policy) # (1)
 ```
 
-1. if you have access to car detect element you can use `#!py f"car_*.{detect}" == f"car_*.{detect.uid}"`  
+1. if you have access to car detect element you can use `#!py f"car_*.{detect}" == f"car_*.{detect.uid}"`
+
+## Knowledge
+
+[Redis] provides a collection of native [data types][redis data types] (_Strings, lists, Sets, Hashes, Sorted Sets_) and thanks to the [redis-purse] library we extend with _Queue_ (FIFO, LIFO and Priority) and distributed Lock. The access to types is implemented by non-blocking I/O operation (async/await).
+
+??? tip "Async element definition"
+
+    You can trasparently add `#!py async` in front of your element defintion, allowing use `#!py await` (as for [redis-purse]).  
+
+    ```python
+    @loop.monitor
+    async def detect(emergency, on_next):
+      await coroutine()
+      ...
+    ```
+
+### Example
+
+Create and access to the `cars` _Set_ in the global Knowledge.
+
+```python
+# Create a Set in the global Knowledge (type string)
+k_cars = mape.app.k.create_set("cars", str)
+# Clean Set before
+await k_cars.clear()
+...
+
+# Different device and base code
+@loop.analyze
+async def cars_store(car, on_next, self):
+    if not hasattr(self, 'k_cars'):
+      # Get access to the same Set
+      self.k_cars = self.loop.app.k.create_set("cars", str)
+    
+    # Add {car.name} to the Set
+    await self.k_cars.add(car.name)
+    # Count cars in the Set
+    car_count = await self.k_cars.len()
+    on_next(car_count)
+```
+
+Attach and handler (`#!py on_cars_change()`) called on change in the `cars` _Set_.
+
+```python
+def on_cars_change(message): # (1)
+  ...
+
+# Register handler for add (sadd) / remove (srem) cars
+self.loop.app.k.notifications(on_cars_change, 
+                              "cars",
+                              cmd_filter=('sadd', 'srem'))
+```
+
+1. Simply define as `#!py async def on_cars_change(message)` if you need. `#! notifications()` is smart to understand.
+
+## InfluxDB
+
+As for [REST](#rest) and [Redis](#redis), you have to configure it before use (no config by `#!py mape.init()` is available).
+
+```yaml
+influxdb:
+    url: http://localhost:8086
+    username: user
+    password: qwerty123456
+    org: your-organization
+    bucket: mape
+    token: <GENERATE_OR_TAKE_FROM_CONFIG_YAML>
+    debug: false
+```
+
+??? note "InfluxDB instance"
+
+    PyMAPE doesn't provide (yet) an instance of [InfluxDB] so you have to run your own, for example using a docker container:
+
+    ``` {.console .termy}
+    docker run --name mape-influxdb -p 8086:8086 \
+    -v $(pwd)/docker/influxdb/data:/var/lib/influxdb2 \
+    -v $(pwd)/docker/influxdb/conf:/etc/influxdb2 \
+    -e DOCKER_INFLUXDB_INIT_MODE=setup \
+    -e DOCKER_INFLUXDB_INIT_USERNAME=user \
+    -e DOCKER_INFLUXDB_INIT_PASSWORD=qwerty123456 \
+    -e DOCKER_INFLUXDB_INIT_ORG=univaq \
+    -e DOCKER_INFLUXDB_INIT_BUCKET=mape \
+    -e DOCKER_INFLUXDB_INIT_RETENTION=1w \
+    -e DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=*TOKEN* \
+    --rm influxdb:2.0
+    
+    ---> 100%
+    ```
+
+Now you can use the class `InfluxObserver`, a sink to publish stream in [InfluxDB].
+
+### Example
+
+<figure markdown>
+![Influxdb example](../assets/img/remote-influxdb.png){ .figure style="width: 300px" }
+</figure>
+
+=== "Auto"
+
+    ```python
+    from mape.remote.influxdb import InfluxObserver
+    
+    # Store detect output 
+    detect.subscribe(InfluxObserver())
+    ```
+
+=== "Fields mapper"
+
+    ```python
+    from mape.remote.influxdb import InfluxObserver
+
+    detect.subscribe(
+      # All args are optional
+      InfluxObserver(
+        measurement="car",
+        tags=("custom-tag", "value"),
+        fields_mapper=lambda item: (item.type, item.value)
+      )
+    )
+    ```

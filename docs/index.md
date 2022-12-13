@@ -39,13 +39,13 @@
 ## Requirements
 
 * Python 3.8+
-* [RxPY](https://github.com/ReactiveX/RxPY)
-* [PyYAML](https://github.com/yaml/pyyaml)
-* [AIOHTTP](https://github.com/aio-libs/aiohttp)
-* [FastAPI](https://github.com/tiangolo/fastapi)
-* [Uvicorn](https://github.com/encode/uvicorn)
-* [Redis-purse](https://github.com/plataux/purse)
-* [Influxdb-client](https://github.com/influxdata/influxdb-client-python)
+* [RxPY]
+* [PyYAML]
+* [AIOHTTP]
+* [FastAPI]
+* [Uvicorn]
+* [Redis-purse]
+* [Influxdb-client]
 
 
 ## Key features
