@@ -8,6 +8,7 @@
 [Uvicorn]: https://www.uvicorn.org/
 [Redis-purse]: https://github.com/plataux/purse
 [Influxdb-client]: https://github.com/influxdata/influxdb-client-python
+[weyns paper]: https://www.ics.uci.edu/~seal/publications/2012aSefSAS.pdf
 [operators]: https://rxpy.readthedocs.io/en/latest/operators.html
 [observable contract]: https://reactivex.io/documentation/observable.html
 [Redis]: https://redis.io/

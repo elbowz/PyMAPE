@@ -42,7 +42,7 @@ Different __patterns__ of interacting control loops have been used in practice b
 
 !!! info
 
-    Further and deeply information about different patterns related to decentralized and distributed system can be found in the paper ["On Patterns for Decentralized Control in Self-Adaptive Systems", Danny Weyns](https://www.ics.uci.edu/~seal/publications/2012aSefSAS.pdf)
+    Further and deeply information about different patterns related to decentralized and distributed system can be found in the paper ["On Patterns for Decentralized Control in Self-Adaptive Systems", Danny Weyns][weyns paper]
 
 In the next sections of documentations, we will see these patterns through the implementation of some ad-hoc examples. Discovering different approaches, trade-off, and of course the PyMAPE framework.
 
