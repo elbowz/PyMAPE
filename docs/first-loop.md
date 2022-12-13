@@ -337,3 +337,5 @@ policy.subscribe(exec)
     Speed: 180
     Siren is ON
     ```
+
+--8<-- "docs/append.md"

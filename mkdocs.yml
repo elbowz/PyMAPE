@@ -116,8 +116,6 @@ markdown_extensions:
       custom_checkbox: true
   - pymdownx.tilde
   - pymdownx.snippets:
-        auto_append:
-          - docs/append.md
 
 # Customization
 extra:

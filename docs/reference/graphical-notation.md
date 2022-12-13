@@ -28,3 +28,5 @@ The _Connection lines_ can be also used to represent the cardinality of entities
 In the last image you can see a simple instance where the `planner` uses the _Router_ (dispatching the items to the executers) and _Group & Pipe_ (group item by a condition and apply some pipe operators). There is also a _Call Method_ link in the planner.
 
 ![Graphical notation: connection example](../assets/img/notation-connection-example.png){ .figure .center style="width: 600px" }
+
+--8<-- "docs/append.md"

@@ -51,3 +51,5 @@ Explore the entities (used to develop your loops), starting from left to right:
 
 
 [First loop]: ../first-loop.md
+
+--8<-- "docs/append.md"

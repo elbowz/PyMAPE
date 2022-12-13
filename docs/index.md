@@ -88,4 +88,5 @@
     If you already know what is a Self-Adaptive system, a MAPE-K loop and related patterns, jump to:
 
     [Installation :material-arrow-right:](installation.md){ .md-button }
- 
+
+--8<-- "docs/append.md"

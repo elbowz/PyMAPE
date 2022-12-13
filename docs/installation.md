@@ -47,4 +47,4 @@ Then use `#!console poetry shell` and/or `#!console poetry run` (eg. `#!console 
 
     Using [poetry] you won't have to install the python packages dependencies needed to execute the [examples].
 
-
+--8<-- "docs/append.md"

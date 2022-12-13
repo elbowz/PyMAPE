@@ -61,3 +61,5 @@ The framework trys also to introduce a graphical notation. In the figure below, 
 ![Element graphical notation](../assets/img/notation-element-simple.png){ .figure .center style="width: 300px" }
 
 `Start behaviour`, `ports`, `pipe operators`, `uid`, and `class` element are still visible.
+
+--8<-- "docs/append.md"
