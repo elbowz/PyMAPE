@@ -3,7 +3,7 @@ L'`Element` is the central part of the framework. It will have to communicate wi
 ## Internal view
 
 Let's look inside an Element and try to understand how it works:
-![Element exploded](../assets/img/notation_element_exploded.png){ .figure }
+![Element exploded](../assets/img/notation-element-exploded.png){ .figure }
 
 ## Start behaviors
 
@@ -59,7 +59,7 @@ If you send a `CallMethod` object (as item), thanks to its payload you can call 
 The framework trys also to introduce a graphical notation. In the figure below, you can see the final and imploded representation of an element.   
 
 <figure markdown>
-![Element graphical notation](../assets/img/notation_element_simple.png){ style="background-color: white; width: 300px" }
+![Element graphical notation](../assets/img/notation-element-simple.png){ .figure style="width: 300px" }
 </figure>
 
 `Start behaviour`, `ports`, `pipe operators`, `uid`, and `class` element are still visible.
