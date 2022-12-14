@@ -27,7 +27,7 @@ def _fields_mapper(item, key='value'):
 
 
 class InfluxObserver(Observer):
-    """An Observer (Sink) where sent stream are stored in a InfluxDB instance.
+    """An Observer (Sink) where sent stream is stored in an InfluxDB instance.
 
     More info on [InfluxDB data elements](https://docs.influxdata.com/influxdb/v2.5/reference/key-concepts/data-elements/).
 
@@ -48,6 +48,7 @@ class InfluxObserver(Observer):
     Args:
         measurement: The name of the measurement.
         tags: Tags include tag keys and tag values that are stored as strings and metadata.
+            If not provided it try to extreact information alone.
         fields_mapper: Function that return a `Tuple` or `List` of the field `(key, value)` given a stream item.
              The default mapper works with `Message`, `dict` with a "value" key, and simple base type.
         bucket: Taken from config when provided

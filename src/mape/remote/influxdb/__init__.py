@@ -1,6 +1,7 @@
 from .rx_utils import (
     InfluxObserver,
-    WriteOptions,
+    SYNCHRONOUS,
+    ASYNCHRONOUS,
     Point
 )
 
