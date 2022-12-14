@@ -115,6 +115,17 @@ async def async_main():
         create_car_loop('Panda', 90)
     )
 
+    from utils import handle_prompt
+
+    def prompt_handler(value):
+        if value in ['exit', 'close', 'stop']:
+            mape.stop()
+
+    def key_close_handler(key):
+        mape.stop()
+
+    key_bindings_handlers = {'c-c': key_close_handler}
+    asyncio.create_task(task_exception(handle_prompt(prompt_handler, key_bindings_handlers)))
 
 if __name__ == '__main__':
     logger.debug('START...')
