@@ -124,7 +124,10 @@ async def async_main(name, count_lanes):
 
     """ MAPE Elements LOCAL connection """
     # Use InfluxDB sink/terminator to store number of lanes
-    lanes.subscribe(InfluxObserver())
+    lanes.pipe(
+        # strip Message attrs (used as tags)
+        ops.map(lambda msg: msg.value)
+    ).subscribe(InfluxObserver(measurement="lanes", tags=("carriageway", name)))
 
     # Get access to Set in the global Knowledge (type string)
     k_cars = mape.app.k.create_set(f"{loop}_cars", str)
