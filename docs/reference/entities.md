@@ -8,7 +8,7 @@ To know the entities that compose PyMAPE, and their relationships, you can see a
 
 Explore the entities (used to develop your loops), starting from left to right:
 
-* `mape` package allows the configuration by `#!py init()` method and also by a config file (default: `mape.yml` in your working directory) or a mix of both. `#!py init()` has priority over the file. From `mape` you have direct access to `app` and `config`.
+* `mape` package allows the configuration by [`init()`][mape.init] method and also by a config file (default: `mape.yml` in your working directory) or a mix of both. [`init()`][mape.init] has priority over the file. From `mape` you have direct access to `app` and `config`.
 * `config` dict exposes all your configuration (eg. `#!py mape.config['debug']`), and you can also use it for your purpose, putting what you want in the configuration file.
 * `App` gives access to all declared MAPE loops, levels, and the global Knowledge
 * `Loop` is identified by a uid, contains its Element, has its Knowledge, and give access to the main `app` object (ie. `loop.app`) and its level (if exists).
@@ -24,31 +24,9 @@ Explore the entities (used to develop your loops), starting from left to right:
 
     Please refer to the [First loop] section and the following sections, to see how and when these entities are used.
 
-### `mape`
+## `mape`
 
-* `#!py init(debug, asyncio_loop, redis_url, rest_host_port, config_file)`
-
-    `debug = False`
-     
-    :   Enable more verbose mode.
-    
-    `asyncio_loop = None`
-    
-    :   Provide your asyncio loop or leave PyMAPE to generate one for you.
-    
-    `redis_url = None`
-    
-    :   Url of your Redis instance (eg. `redis://localhost:6379`)
-    
-    `rest_host_port = None`
-    
-    :   Web server `host:port`, where some REST API endpoint will be provided (eg. `0.0.0.0:6060`).
-    
-    `config_file = mape.yml`
-    
-    :   Path (absolute or relative to working directory) to the config file. 
-
-
+### ::: mape.init
 
 [First loop]: ../first-loop.md
 

@@ -22,8 +22,39 @@ def _fields_mapper(item, key='value'):
 
     return key, value
 
+# TODO: Implement the asyncio version
+#  https://influxdb-client.readthedocs.io/en/stable/usage.html#how-to-use-asyncio
+
 
 class InfluxObserver(Observer):
+    """An Observer (Sink) where sent stream are stored in a InfluxDB instance.
+
+    More info on [InfluxDB data elements](https://docs.influxdata.com/influxdb/v2.5/reference/key-concepts/data-elements/).
+
+    Examples:
+        ```python
+        from mape.remote.influxdb import InfluxObserver
+
+        detect.subscribe(
+          # All args are optional
+          InfluxObserver(
+            measurement="car",
+            tags=("custom-tag", "value"),
+            fields_mapper=lambda item: (item.type, item.value)
+          )
+        )
+        ```
+
+    Args:
+        measurement: The name of the measurement.
+        tags: Tags include tag keys and tag values that are stored as strings and metadata.
+        fields_mapper: Function that return a `Tuple` or `List` of the field `(key, value)` given a stream item.
+             The default mapper works with `Message`, `dict` with a "value" key, and simple base type.
+        bucket: Taken from config when provided
+        is_raw: If `True` stream item must be an `influxdb_client.Point`.
+        write_options: Configure which type of writes client use (refer to [https://influxdb-client.readthedocs.io/]()).
+        client: Leaving `None` the `InfluxDBClient` is instantiated for you.
+    """
     def __init__(self,
                  measurement: str | None = None,
                  tags: Iterable | Iterable[Iterable] | None = None,

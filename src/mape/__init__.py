@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import asyncio
 import signal
 import aioredis
 import warnings
+from asyncio import AbstractEventLoop
 from fastapi import FastAPI
 from typing import Dict
 
@@ -25,7 +27,7 @@ __version__ = "0.1.0a4"
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-aio_loop: Optional[asyncio.AbstractEventLoop] = None
+aio_loop: Optional[AbstractEventLoop] = None
 rx_scheduler: Optional[AsyncIOScheduler] = None
 redis: Optional[aioredis.Redis] = None
 uvicorn_webserver: Optional[UvicornDaemon] = None
@@ -86,7 +88,32 @@ def _start_web_server(host_port: str, loop):
         logger.info('Webserver started: No more endpoint can be added since now!')
 
 
-def init(debug=False, asyncio_loop=None, redis_url=None, rest_host_port=None, config_file=None):
+def init(debug: bool = False,
+         asyncio_loop: AbstractEventLoop | None = None,
+         redis_url: string | None = None,
+         rest_host_port: string | None = None,
+         config_file: string | None = None
+         ) -> None:
+    """Initialize the PyMAPE framework, internal variables and services.
+    Allow configuration by passed arguments and/or `config_file`, giving priority on the first one.
+
+    Call it before start using the framework.
+
+    Examples:
+        ```python
+        mape.init(debug=True,
+                redis_url="redis://localhost:6379",
+                rest_host_port="0.0.0.0:6060",
+                config_file="custom.yml")
+        ```
+
+    Args:
+        debug: Enable more verbose mode.
+        asyncio_loop: Provide your asyncio loop or leave PyMAPE to generate one for you.
+        redis_url: Url of your Redis instance (eg. `redis://localhost:6379`)
+        rest_host_port: Web server "host:port", where REST API endpoint will be provided (eg. `0.0.0.0:6060`).
+        config_file: Path (absolute or relative to working directory) to the config file (default `mape.yml`).
+    """
     global config, aio_loop, rx_scheduler, redis, fastapi, app
 
     logging.getLogger(__name__).setLevel(logging.DEBUG if debug else logging.WARNING)

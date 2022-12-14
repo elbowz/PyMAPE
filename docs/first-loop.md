@@ -26,7 +26,7 @@ def detect(emergency, on_next): # (4)
     on_next(emergency)
 ```
 
-1.  `#!py mape.init()` accept different params to setup PyMAPE, allowing configuration by a config file and/or directly in the source code.
+1.  [mape.init]() accept different params to setup PyMAPE, allowing configuration by a config file and/or directly in the source code.
 2.  `uid` is an __unique__ identification for the defined loop. If you don't pass an `uid`, system provide a random one for you.
 3.  Decorator create and register the new element monitor to the ambulance `loop`.
 4.  The function name `#!py detect` is used as `uid` of our element inside the ambulance loop.

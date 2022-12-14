@@ -248,7 +248,7 @@ self.loop.app.k.notifications(on_cars_change,
 
 ## InfluxDB
 
-As for [REST](#rest) and [Redis](#redis), you have to configure it before use (no config by `#!py mape.init()` is available).
+As for [REST](#rest) and [Redis](#redis), you have to configure it before use (config by [mape.init]() is not available).
 
 ```yaml
 influxdb:
@@ -292,7 +292,7 @@ Now you can use the class `InfluxObserver`, a sink to publish stream in [InfluxD
     ```python
     from mape.remote.influxdb import InfluxObserver
     
-    # Store detect output 
+    # Store element "detect" stream output 
     detect.subscribe(InfluxObserver())
     ```
 
@@ -311,13 +311,6 @@ Now you can use the class `InfluxObserver`, a sink to publish stream in [InfluxD
     )
     ```
 
-#### ::: mape.remote.influxdb.InfluxObserver
-    options:
-      show_root_heading: true
-      show_root_full_path: true
-      show_signature: true
-      show_signature_annotations: true
-
-[InfluxObserver][mape.remote.influxdb.InfluxObserver]
+### ::: mape.remote.influxdb.InfluxObserver
 
 --8<-- "docs/append.md"

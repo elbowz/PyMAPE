@@ -78,8 +78,16 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
+          # Copy and change under a specific heading (ie :::) to overwrite
+          # https://mkdocstrings.github.io/python-legacy/usage/#globallocal-options
           options:
-            # https://mkdocstrings.github.io/python-legacy/usage/#globallocal-options
+            show_root_heading: true
+            show_root_toc_entry: false
+            show_root_full_path: true
+            show_object_full_path: false
+            show_signature: true
+            show_signature_annotations: false
+            show_bases: true
             show_source: true
 
 # Reload on change in followind directories
