@@ -58,9 +58,9 @@ theme:
     text: Roboto
     code: Roboto Mono
   icon:
-    logo: simple/hive_blockchain
+#    logo: simple/hive_blockchain
     repo: fontawesome/brands/github
-#  logo: assets/logo.png
+  logo: assets/img/logo-black.svg
 #  favicon: assets/favicon.png
   language: en
 
