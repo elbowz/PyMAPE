@@ -261,7 +261,30 @@ mape.app['ambulance.detect'] # (1)
 
 ## Debug
 
-Some tips for debug your loops, elements crossed by the streams.
+Some tips for debug your loops and elements crossed by the streams.
+
+??? tip "Internal library debug"
+
+    To enable PyMAPE debug (ie. verbose information), remember to configure your logger. At least:
+    
+    ```python
+    import logging
+
+    logging.basicConfig(level=logging.INFO) # (1)
+    logging.getLogger('mape').setLevel(logging.DEBUG)
+    ```
+
+    1. Set level for "root" module logger
+    2. Set level for PyMAPE internal logger
+    
+    or enable PyMAPE debug, simply:
+    
+    ```python
+    logger = init_logger(lvl=logging.INFO) # (1)
+    mape.init(debug=True)
+    ```
+
+    1. Use only if you want try our internal logger settings.
 
 ### Element
 
@@ -314,6 +337,8 @@ You can print the __in__ and/or __out__ items stream of an element:
 
     The history order is due the recursive call, on which ReactiveX is based. If necessary this beahviour can be "fixed" in the next realease.
 
+It use PyMAPE internal logger.
+
 ### LogObserver
 
 You can create a fake element (`LogObserver`) and attach it to real element. The `LogObserver` doesn't modify the stream but simply print it.
@@ -337,5 +362,7 @@ policy.subscribe(exec)
     Speed: 180
     Siren is ON
     ```
+
+It use "root" module logger or `print()` if not exist.
 
 --8<-- "docs/append.md"
