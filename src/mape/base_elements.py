@@ -77,7 +77,10 @@ class Element(Observable, Observer, rx_typing.Subject):
         self._loop: mape.Loop = loop
         self._aio_loop = mape.aio_loop or asyncio.get_event_loop()
         self.is_running = False
+
         self._debug = GenericObject()
+        self._debug.log_in = LogObserver(f"in > [{self._loop.uid}{RESERVED_SEPARATOR}{self.uid}]", enable=False)
+        self._debug.log_out = LogObserver(f"[{self._loop.uid}{RESERVED_SEPARATOR}{self.uid}] > out", enable=False)
 
         # Add Element to loop
         self._uid = self.add_to_loop(loop)
@@ -114,22 +117,9 @@ class Element(Observable, Observer, rx_typing.Subject):
 
     move_to_loop = add_to_loop
 
-    def debug(self, lvl: Element.Debug = Debug.DISABLE, module_name=None):
-        module_name = module_name or caller_module_name()
-
-        if Element.Debug.IN in lvl:
-            self._debug.in_dispose = self._p_in.input.subscribe(
-                LogObserver(f"in > [{self._loop.uid}{RESERVED_SEPARATOR}{self.uid}]", module_name)
-            )
-        elif hasattr(self._debug, 'in_dispose'):
-            self._debug.in_dispose.dispose()
-
-        if Element.Debug.OUT in lvl:
-            self._debug.out_dispose = self._p_out.output.subscribe(
-                LogObserver(f"[{self._loop.uid}{RESERVED_SEPARATOR}{self.uid}] > out", module_name)
-            )
-        elif hasattr(self._debug, 'out_dispose'):
-            self._debug.out_dispose.dispose()
+    def debug(self, lvl: Element.Debug = Debug.DISABLE):
+        self._debug.log_in.enable = True if Element.Debug.IN in lvl else False
+        self._debug.log_out.enable = True if Element.Debug.OUT in lvl else False
 
     def subscribe(self, observer: Optional[Union[rx_typing.Observer, rx_typing.OnNext]] = None,
                   on_error: Optional[rx_typing.OnError] = None, on_completed: Optional[rx_typing.OnCompleted] = None,
@@ -157,9 +147,9 @@ class Element(Observable, Observer, rx_typing.Subject):
         if not self.is_running:
             # TODO: debug can be pre-pend here as ops.do_action() instead of subscribe ?!
             self._p_in.pipe = self._p_in.input.pipe(
+                ops.do(self._debug.log_in),
                 ops.filter(lambda item: not isinstance(item, typing.CallMethod)),
                 ops.do_action(lambda item: isinstance(item, typing.Message) and item.add_hop(self)),
-                #ops.do_action(lambda item: print("DEBUG" + str(item))),
                 *self._p_in.operators
             )
 
@@ -180,7 +170,10 @@ class Element(Observable, Observer, rx_typing.Subject):
 
             self._p_in.disposable = CompositeDisposable(sub_message, sub_method_call)
 
-            self._p_out.pipe = self._p_out.input.pipe(*self._p_out.operators)
+            self._p_out.pipe = self._p_out.input.pipe(
+                *self._p_out.operators,
+                ops.do(self._debug.log_out)
+            )
             self._p_out.disposable = self._p_out.pipe.subscribe(self._p_out.output, scheduler=scheduler)
 
             self.is_running = True

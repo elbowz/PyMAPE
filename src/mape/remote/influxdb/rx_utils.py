@@ -48,7 +48,7 @@ class InfluxObserver(Observer):
     Args:
         measurement: The name of the measurement.
         tags: Tags include tag keys and tag values that are stored as strings and metadata.
-            If not provided it try to extreact information alone.
+            If not provided it tries to extreact information alone.
         fields_mapper: Function that return a `Tuple` or `List` of the field `(key, value)` given a stream item.
              The default mapper works with `Message`, `dict` with a "value" key, and simple base type.
         bucket: Taken from config when provided

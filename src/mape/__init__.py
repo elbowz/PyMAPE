@@ -22,10 +22,11 @@ from .utils import init_logger, task_exception
 # Please make sure the version here remains the same as in pyproject.toml
 __version__ = "0.1.0a4"
 
-# Disable logging until user use logging.basicConfig()
 # TODO: remove logger initialization
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+logging.getLogger(__name__).setLevel(logging.WARNING)
+# Disable logging until user use logging.basicConfig()
+# logger.addHandler(logging.NullHandler())
 
 aio_loop: Optional[AbstractEventLoop] = None
 rx_scheduler: Optional[AsyncIOScheduler] = None
@@ -116,7 +117,12 @@ def init(debug: bool = False,
     """
     global config, aio_loop, rx_scheduler, redis, fastapi, app
 
-    logging.getLogger(__name__).setLevel(logging.DEBUG if debug else logging.WARNING)
+    if debug:
+        # Configure a base (root module ) logger (StreamHandler, Formatter, etc...),
+        # if user hasn't do one but enable debug
+        logging.basicConfig(level=logging.DEBUG)
+        # Set debug level also for PyMAPE
+        logging.getLogger(__name__).setLevel(logging.DEBUG)
 
     config_file = config_file or mape_config.default_config_file
 
@@ -191,7 +197,7 @@ def set_debug(debug=False, asyncio_slow_callback_duration=0.1):
     # "<_SelectorSocketTransport fd=11 read=polling write=<idle, bufsize=0>>: Fatal read error on socket transport"
     # aio_loop.set_debug(debug)
 
-    logging.getLogger(__name__).setLevel(log_lvl)
+    debug and logging.getLogger(__name__).setLevel(log_lvl)
     logging.getLogger('asyncio').setLevel(log_lvl)
 
     if fastapi:

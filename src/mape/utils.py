@@ -32,10 +32,20 @@ def log_record_enrich(record):
 def init_logger(name: str = None, lvl: int = logging.WARNING, fmt: str = _fmt) -> logging.Logger:
     """
     Set base/root level logger for a package name
-    :param name: base logger name (ie. package name)
-    :param lvl: default log level
-    :param fmt: format log string
-    :return: logger
+
+    Examples:
+        ```python
+        logger = init_logger()
+        logger.info("Your message")
+        ```
+
+    Args:
+        name: base logger name (ie. package name)
+        lvl: log level
+        fmt: format log string
+
+    Returns:
+        logger
     """
     formatter = logging.Formatter(fmt, datefmt=_datefmt)
 
@@ -74,7 +84,8 @@ def caller_module_name(depth=1):
 
 
 class LogObserver(Observer):
-    def __init__(self, postfix=None, module_name=None):
+    def __init__(self, postfix=None, module_name=None, enable=True):
+        self.enable = enable
         self.prefix = f"({str(hash(self))[-4:]})"
         self.postfix = f" | {postfix}" if postfix else ''
 
@@ -84,18 +95,19 @@ class LogObserver(Observer):
         else:
             self.logger = logging.getLogger(module_name)
 
+        # If no logger is configured used standard print
         if not self.logger.hasHandlers():
             self.logger.info = print
             self.logger.error = print
 
     def on_next(self, value):
-        self.logger.info(f"{self.prefix} on next: {value}{self.postfix}")
+        self.enable and self.logger.info(f"{self.prefix} on next: {value}{self.postfix}")
 
     def on_error(self, error):
-        self.logger.error(f"on error: {error}{self.postfix}")
+        self.enable and self.logger.error(f"on error: {error}{self.postfix}")
 
     def on_completed(self):
-        self.logger.info(f"completed{self.postfix}")
+        self.enable and self.logger.info(f"completed{self.postfix}")
 
 
 @dataclass
