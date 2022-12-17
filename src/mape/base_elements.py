@@ -133,11 +133,11 @@ class Element(Observable, Observer, rx_typing.Subject):
     def _subscribe_core(self, observer, scheduler=None):
         """ Things to do on each subscribe """
         subscription = self._p_out.output.subscribe(observer, scheduler=scheduler)
-        return CompositeDisposable(Disposable(lambda _: self.on_unsubscribe(observer)), subscription)
+        return CompositeDisposable(Disposable(lambda: self.on_unsubscribe(observer)), subscription)
 
     def on_unsubscribe(self, observer):
         """ On each subscriber have disposed/ended the subscription """
-        logger.debug(f"on_unsubscribe", observer)
+        logger.debug(f"on_unsubscribe {self.uid}")
 
     """ Start and stop element. 
     Only port_in stay readable, the rest is frozen (ie. no item transit).
