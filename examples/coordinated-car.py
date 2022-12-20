@@ -18,11 +18,7 @@ from mape.remote.influxdb import InfluxObserver
 
 from coordinated_common import prompt_setup
 
-logger = init_logger()
-logger.setLevel(logging.DEBUG)
-
-mape.setup_logger()
-logging.getLogger('mape').setLevel(logging.DEBUG)
+logger = init_logger(lvl=logging.INFO)
 
 
 class SpeedItem(BaseModel):

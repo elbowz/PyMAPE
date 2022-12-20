@@ -14,11 +14,7 @@ from mape import operators as ops
 from mape.remote.redis import SubObservable
 from mape.typing import Message
 
-logger = init_logger()
-logger.setLevel(logging.DEBUG)
-
-mape.setup_logger()
-logging.getLogger('mape').setLevel(logging.DEBUG)
+logger = init_logger(lvl=logging.INFO)
 
 
 class AVG(Analyze):

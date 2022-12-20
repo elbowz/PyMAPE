@@ -13,11 +13,7 @@ from mape.typing import CallMethod
 from mape import operators as ops
 from mape.remote.influxdb import InfluxObserver
 
-logger = init_logger()
-logger.setLevel(logging.DEBUG)
-
-mape.setup_logger()
-logging.getLogger('mape').setLevel(logging.DEBUG)
+logger = init_logger(lvl=logging.INFO)
 
 
 async def create_hold_distance(car, car_in_front):
