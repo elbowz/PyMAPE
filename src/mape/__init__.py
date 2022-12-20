@@ -20,7 +20,7 @@ from .remote.influxdb import set_config as set_influxdb
 from .utils import init_logger, task_exception
 
 # Please make sure the version here remains the same as in pyproject.toml
-__version__ = "0.1.0a4"
+__version__ = "0.1.0a5"
 
 # TODO: remove logger initialization
 logger = logging.getLogger(__name__)
