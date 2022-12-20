@@ -39,8 +39,12 @@ A this point, you have a loop (`ambulance`) made up of a single monitor element 
 
 `#!py detect()` function is the monitor element. It accepts at least two positional params:
 
-* __stream item__ (`emergency`) - the value in input of an element. The elements talk with each other by streams as [ReactiveX] philosophy.
-* __on_next__ - is the function to call with the value to pass to the next linked elements (`#!py subscribed()`). It can be called 0 or N times, you haven't to confused with the function `#!py return`.
+* __stream item__ (`emergency`) - is the input value of the element. The elements talk with each other by streams following the [ReactiveX] philosophy.
+* __on_next__ - is the function to call with the value to pass to the next linked elements (`#!py subscribed()`). It can be called 0 or N times, you haven't to confused with the function `#!py return` concept.
+
+??? note "type of `detect`"
+
+    `detect` is no more a simple function but an object, instance of class `Monitor`.
 
 [ReactiveX]: https://en.wikipedia.org/wiki/ReactiveX
 
@@ -115,7 +119,7 @@ This is the wanted behaviour, because you have to start element `detect` wheneve
 
 ??? info "Different elements behaviour"
 
-    Elements can have 3 different behaviours respect to the stream passing through them:
+    Elements can have 3 different behaviors with respect to the stream passing through them:
     
     <!-- Same text in reference/entities.md -->
 
@@ -154,7 +158,7 @@ There are more than 140 operators (about 400 variants), and we advise and encour
 
 ### Filters
 
-In the ambulance example there is an issue. If the monitor collect an emergency multiple time, all the following element (planner and executer) are invoked. 
+In the ambulance example there is an issue. If the monitor collect an emergency multiple time, all the following element (planner and executer) are still invoked. 
 
 ```python
 detect(True)
